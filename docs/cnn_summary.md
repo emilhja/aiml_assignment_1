@@ -2,7 +2,7 @@
 
 ## Current CNN architecture
 
-The current model is a small CNN adapted for MNIST classification.
+The current default model is a small CNN adapted for MNIST classification.
 
 Layer sequence:
 
@@ -62,3 +62,31 @@ ResNet50 is:
 - typically used for more difficult image recognition tasks
 
 So the present model is best described as a classic introductory CNN, not a ResNet-style architecture.
+
+## CNN variant comparison
+
+| Model | Conv channels | Hidden layer | Activation | Dropout | Main purpose |
+| --- | --- | --- | --- | --- | --- |
+| `cnn_small` | `16 -> 32` | `64` | `ReLU` | `0.0` | Lightweight baseline with lower capacity |
+| `cnn_medium` | `32 -> 64` | `128` | `LeakyReLU` | `0.0` | Balanced default model with strong performance |
+| `cnn_dropout` | `32 -> 64` | `128` | `ReLU` | `0.3` | Tests whether extra regularization improves generalization |
+| `cnn_deep_balanced` | `32 -> 64 -> 64` | `512` | `ReLU` | `0.0` | Adds a third convolution layer while staying in a similar parameter range |
+| `cnn_deep_wide` | `32 -> 64 -> 128` | `256` | `ReLU` | `0.0` | Adds a third convolution layer with a wider final feature stage |
+
+In short:
+
+- `cnn_small` tests a smaller network.
+- `cnn_medium` is the main balanced model.
+- `cnn_dropout` tests the effect of regularization.
+- `cnn_deep_balanced` tests a deeper CNN with a third convolution layer.
+- `cnn_deep_wide` tests a deeper and slightly wider CNN.
+
+## How to interpret later convolution layers
+
+Typical pattern:
+
+- The first convolution layer learns simple local features such as edges, stroke direction, and small blobs.
+- Later convolution layers combine those simple patterns into more complex digit parts such as corners, loops, junctions, and curved stroke combinations.
+- That is why deeper CNNs can sometimes classify digits better: later layers can represent more abstract structure than the first layer alone.
+
+The comparison workflow now saves filter visualizations for the first and last convolution layer so these differences can be discussed directly from each trained model.

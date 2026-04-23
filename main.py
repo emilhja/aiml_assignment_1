@@ -19,7 +19,142 @@ from notebook_report import create_report_notebook, execute_report_notebook
 from torch_gpu import describe_device, get_device
 
 CURRENT_DIR = Path(__file__).resolve().parent
-AVAILABLE_MODELS = ("mlp", "cnn_small", "cnn_medium", "cnn_dropout")
+AVAILABLE_MODELS = (
+    "mlp",
+    "cnn_small",
+    "cnn_medium",
+    "cnn_dropout",
+    "cnn_deep_balanced",
+    "cnn_deep_wide",
+    "cnn_batchnorm",
+    "cnn_regularized",
+)
+
+
+def build_activation(activation_name):
+    """Create an activation layer from a short configuration string."""
+    if activation_name == "ReLU":
+        return nn.ReLU()
+    if activation_name == "LeakyReLU":
+        return nn.LeakyReLU(negative_slope=0.01)
+    raise ValueError(f"Unsupported activation '{activation_name}'")
+
+
+def count_trainable_parameters(model):
+    """Return the number of trainable parameters in a PyTorch model."""
+    return sum(parameter.numel() for parameter in model.parameters() if parameter.requires_grad)
+
+
+def compute_l1_penalty(model):
+    """Return the sum of absolute trainable parameter values for L1 regularization."""
+    penalty = None
+    for parameter in model.parameters():
+        if not parameter.requires_grad:
+            continue
+        term = parameter.abs().sum()
+        penalty = term if penalty is None else penalty + term
+    if penalty is None:
+        return torch.tensor(0.0)
+    return penalty
+
+
+def merge_overrides(defaults, overrides=None):
+    """Return a shallow copy of defaults with optional override values applied."""
+    merged = dict(defaults)
+    if overrides:
+        merged.update(overrides)
+    return merged
+
+
+def get_model_defaults(model_name):
+    """Return architecture defaults for the named model."""
+    if model_name == "mlp":
+        return {
+            "model_name": "MNISTPerceptron",
+            "hidden_size_1": 128,
+            "hidden_size_2": 64,
+            "activation": "LeakyReLU",
+        }
+    if model_name == "cnn_small":
+        return {
+            "model_name": "cnn_small",
+            "conv_channels": [16, 32],
+            "kernel_size": 3,
+            "pool_kernel_size": 2,
+            "classifier_hidden_size": 64,
+            "activation": "ReLU",
+            "dropout": 0.0,
+            "batch_norm": False,
+        }
+    if model_name == "cnn_medium":
+        return {
+            "model_name": "cnn_medium",
+            "conv_channels": [32, 64],
+            "kernel_size": 3,
+            "pool_kernel_size": 2,
+            "classifier_hidden_size": 128,
+            "activation": "LeakyReLU",
+            "dropout": 0.0,
+            "batch_norm": False,
+        }
+    if model_name == "cnn_dropout":
+        return {
+            "model_name": "cnn_dropout",
+            "conv_channels": [32, 64],
+            "kernel_size": 3,
+            "pool_kernel_size": 2,
+            "classifier_hidden_size": 128,
+            "activation": "ReLU",
+            "dropout": 0.3,
+            "batch_norm": False,
+        }
+    if model_name == "cnn_deep_balanced":
+        return {
+            "model_name": "cnn_deep_balanced",
+            "conv_channels": [32, 64, 64],
+            "kernel_size": 3,
+            "pool_kernel_size": 2,
+            "classifier_hidden_size": 512,
+            "activation": "ReLU",
+            "dropout": 0.0,
+            "batch_norm": False,
+        }
+    if model_name == "cnn_deep_wide":
+        return {
+            "model_name": "cnn_deep_wide",
+            "conv_channels": [32, 64, 128],
+            "kernel_size": 3,
+            "pool_kernel_size": 2,
+            "classifier_hidden_size": 256,
+            "activation": "ReLU",
+            "dropout": 0.0,
+            "batch_norm": False,
+        }
+    if model_name == "cnn_batchnorm":
+        return {
+            "model_name": "cnn_batchnorm",
+            "conv_channels": [32, 64, 64],
+            "kernel_size": 3,
+            "pool_kernel_size": 2,
+            "classifier_hidden_size": 256,
+            "activation": "ReLU",
+            "dropout": 0.1,
+            "batch_norm": True,
+        }
+    if model_name == "cnn_regularized":
+        return {
+            "model_name": "cnn_regularized",
+            "conv_channels": [32, 64, 64],
+            "kernel_size": 3,
+            "pool_kernel_size": 2,
+            "classifier_hidden_size": 256,
+            "activation": "ReLU",
+            "dropout": 0.25,
+            "batch_norm": True,
+        }
+    raise ValueError(
+        f"Unknown model '{model_name}'. Available models: {', '.join(AVAILABLE_MODELS)}"
+    )
 
 
 class MNISTPerceptron(nn.Module):
@@ -77,28 +212,45 @@ class MNISTCNN(nn.Module):
 class ConfigurableMNISTCNN(nn.Module):
     """Configurable CNN used for architecture comparisons on MNIST."""
 
-    def __init__(self, conv_channels, classifier_hidden_size=128, dropout=0.0):
+    def __init__(
+        self,
+        conv_channels,
+        classifier_hidden_size=128,
+        dropout=0.0,
+        activation_name="ReLU",
+        batch_norm=False,
+        kernel_size=3,
+        pool_kernel_size=2,
+    ):
         """Initialize a CNN with repeated conv-relu-pool blocks."""
         super().__init__()
         feature_layers = []
         in_channels = 1
         spatial_size = 28
+        padding = kernel_size // 2
 
         for out_channels in conv_channels:
-            feature_layers.extend(
-                [
-                    nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1),
-                    nn.ReLU(),
-                    nn.MaxPool2d(kernel_size=2, stride=2),
-                ]
+            feature_layers.append(
+                nn.Conv2d(
+                    in_channels,
+                    out_channels,
+                    kernel_size=kernel_size,
+                    padding=padding,
+                )
+            )
+            if batch_norm:
+                feature_layers.append(nn.BatchNorm2d(out_channels))
+            feature_layers.append(build_activation(activation_name))
+            feature_layers.append(
+                nn.MaxPool2d(kernel_size=pool_kernel_size, stride=pool_kernel_size)
             )
             in_channels = out_channels
-            spatial_size //= 2
+            spatial_size //= pool_kernel_size
 
         classifier_layers = [
             nn.Flatten(),
             nn.Linear(in_channels * spatial_size * spatial_size, classifier_hidden_size),
-            nn.ReLU(),
+            build_activation(activation_name),
         ]
         if dropout > 0.0:
             classifier_layers.append(nn.Dropout(dropout))
@@ -113,69 +265,82 @@ class ConfigurableMNISTCNN(nn.Module):
         return self.classifier(x)
 
 
-def build_model(model_name):
+def build_model(model_name, model_overrides=None):
     """Create the requested MNIST model by name."""
+    config = merge_overrides(get_model_defaults(model_name), model_overrides)
     if model_name == "mlp":
-        return MNISTPerceptron()
-    if model_name == "cnn_small":
-        return ConfigurableMNISTCNN(conv_channels=[16, 32], classifier_hidden_size=64)
-    if model_name == "cnn_medium":
-        return MNISTCNN()
-    if model_name == "cnn_dropout":
-        return ConfigurableMNISTCNN(
-            conv_channels=[32, 64],
-            classifier_hidden_size=128,
-            dropout=0.3,
+        return MNISTPerceptron(
+            hidden_size_1=config["hidden_size_1"],
+            hidden_size_2=config["hidden_size_2"],
         )
-    raise ValueError(
-        f"Unknown model '{model_name}'. Available models: {', '.join(AVAILABLE_MODELS)}"
+    if model_name == "cnn_medium" and not model_overrides:
+        return MNISTCNN()
+    return ConfigurableMNISTCNN(
+        conv_channels=config["conv_channels"],
+        classifier_hidden_size=config["classifier_hidden_size"],
+        dropout=config["dropout"],
+        activation_name=config["activation"],
+        batch_norm=config.get("batch_norm", False),
+        kernel_size=config.get("kernel_size", 3),
+        pool_kernel_size=config.get("pool_kernel_size", 2),
     )
 
 
-def build_model_config(model_name):
+def build_model_config(model_name, model_overrides=None):
     """Return serializable metadata for the selected architecture."""
-    if model_name == "mlp":
-        return {
-            "model_name": "MNISTPerceptron",
-            "hidden_size_1": 128,
-            "hidden_size_2": 64,
-        }
-    if model_name == "cnn_small":
-        return {
-            "model_name": "cnn_small",
-            "conv_channels": [16, 32],
-            "kernel_size": 3,
-            "pool_kernel_size": 2,
-            "classifier_hidden_size": 64,
-            "activation": "ReLU",
-            "dropout": 0.0,
-        }
-    if model_name == "cnn_medium":
-        return {
-            "model_name": "cnn_medium",
-            "conv_channels": [32, 64],
-            "kernel_size": 3,
-            "pool_kernel_size": 2,
-            "classifier_hidden_size": 128,
-            "activation": "LeakyReLU",
-            "dropout": 0.0,
-        }
-    if model_name == "cnn_dropout":
-        return {
-            "model_name": "cnn_dropout",
-            "conv_channels": [32, 64],
-            "kernel_size": 3,
-            "pool_kernel_size": 2,
-            "classifier_hidden_size": 128,
-            "activation": "ReLU",
-            "dropout": 0.3,
-        }
-    raise ValueError(
-        f"Unknown model '{model_name}'. Available models: {', '.join(AVAILABLE_MODELS)}"
-    )
+    return merge_overrides(get_model_defaults(model_name), model_overrides)
 
 
-def train_one_epoch(model, data_loader, loss_fn, optimizer, device):
+def save_conv_filter_visualization(model, output_path, title, pick_last=False, max_filters=16):
+    """Save a grid of learned convolution filters from the first or last conv layer."""
+    conv_layers = [module for module in model.modules() if isinstance(module, nn.Conv2d)]
+    if not conv_layers:
+        return
+
+    conv_layer = conv_layers[-1] if pick_last else conv_layers[0]
+    weights = conv_layer.weight.detach().cpu().numpy()
+    num_filters = min(max_filters, weights.shape[0])
+    columns = 4
+    rows = int(np.ceil(num_filters / columns))
+    fig, axes = plt.subplots(rows, columns, figsize=(10, max(3, rows * 2.4)))
+    axes = np.atleast_1d(axes).flatten()
+
+    for axis in axes:
+        axis.axis("off")
+
+    for filter_index in range(num_filters):
+        axis = axes[filter_index]
+        kernel = weights[filter_index]
+        if kernel.shape[0] == 1:
+            image = kernel[0]
+        else:
+            image = np.mean(np.abs(kernel), axis=0)
+        axis.imshow(image, cmap="gray")
+        axis.set_title(f"Filter {filter_index}", fontsize=9)
+        axis.axis("off")
+
+    fig.suptitle(title)
+    fig.tight_layout()
+    fig.savefig(output_path, dpi=150)
+    plt.close(fig)
+
+
+def add_input_noise(images, noise_std):
+    """Apply Gaussian input noise during training as a regularizer."""
+    if noise_std <= 0.0:
+        return images
+    return images + torch.randn_like(images) * noise_std
+
+
+def train_one_epoch(
+    model,
+    data_loader,
+    loss_fn,
+    optimizer,
+    device,
+    input_noise_std=0.0,
+    l1_lambda=0.0,
+):
     """Train the model for one epoch and return loss and accuracy."""
     model.train()
     running_loss = 0.0
@@ -185,10 +350,13 @@ def train_one_epoch(model, data_loader, loss_fn, optimizer, device):
     for images, labels in data_loader:
         images = images.to(device, non_blocking=True)
         labels = labels.to(device, non_blocking=True)
+        images = add_input_noise(images, input_noise_std)
 
         optimizer.zero_grad()
         logits = model(images)
         loss = loss_fn(logits, labels)
+        if l1_lambda > 0.0:
+            loss = loss + l1_lambda * compute_l1_penalty(model)
         loss.backward()
         optimizer.step()
 
@@ -418,6 +586,12 @@ def run_experiment(
     seed=42,
     early_stopping_patience=5,
     augmentation_config=None,
+    weight_decay=0.0,
+    l1_lambda=0.0,
+    input_noise_std=0.0,
+    model_overrides=None,
+    adam_betas=(0.9, 0.999),
+    adam_eps=1e-8,
 ):
     """Run training, evaluation, checkpointing, and artifact generation."""
     torch.manual_seed(seed)
@@ -440,9 +614,16 @@ def run_experiment(
         augmentation_config=augmentation_config,
     )
 
-    model = build_model(model_name).to(device)
+    model = build_model(model_name, model_overrides=model_overrides).to(device)
+    trainable_parameters = count_trainable_parameters(model)
     loss_fn = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+    optimizer = torch.optim.Adam(
+        model.parameters(),
+        lr=learning_rate,
+        weight_decay=weight_decay,
+        betas=adam_betas,
+        eps=adam_eps,
+    )
 
     if output_dir is None:
         output_root = CURRENT_DIR / "outputs" / "Part2"
@@ -467,7 +648,12 @@ def run_experiment(
         "seed": seed,
         "early_stopping_patience": early_stopping_patience,
         "optimizer_name": "Adam",
-        "weight_decay": 0.0,
+        "weight_decay": weight_decay,
+        "l1_lambda": l1_lambda,
+        "adam_beta1": adam_betas[0],
+        "adam_beta2": adam_betas[1],
+        "adam_eps": adam_eps,
+        "input_noise_std": input_noise_std,
         "augmentation_enabled": augmentation_config["enabled"],
         "augmentation_description": (
             "rotation_degrees="
@@ -479,7 +665,9 @@ def run_experiment(
         "device": str(device),
         "output_dir": str(output_path),
     }
-    config.update(build_model_config(model_name))
+    config.update(build_model_config(model_name, model_overrides=model_overrides))
+    config["trainable_parameters"] = trainable_parameters
+    config["num_conv_layers"] = len(config.get("conv_channels", []))
     config_path = checkpoint_manager.save_config(config)
     experiment_db = ExperimentDB(db_path)
     run_id = experiment_db.create_run(
@@ -511,7 +699,13 @@ def run_experiment(
     for epoch in range(1, epochs + 1):
         epoch_start_time = perf_counter()
         train_loss, train_accuracy = train_one_epoch(
-            model, train_loader, loss_fn, optimizer, device
+            model,
+            train_loader,
+            loss_fn,
+            optimizer,
+            device,
+            input_noise_std=input_noise_std,
+            l1_lambda=l1_lambda,
         )
         val_loss, val_accuracy = evaluate(model, val_loader, loss_fn, device)
         epoch_duration_seconds = perf_counter() - epoch_start_time
@@ -625,6 +819,18 @@ def run_experiment(
         test_predictions,
         output_path / "confusion_matrix.png",
     )
+    save_conv_filter_visualization(
+        model,
+        output_path / "conv_filters_first.png",
+        title="First Convolution Layer Filters",
+        pick_last=False,
+    )
+    save_conv_filter_visualization(
+        model,
+        output_path / "conv_filters_last.png",
+        title="Last Convolution Layer Filters",
+        pick_last=True,
+    )
     history_path = checkpoint_manager.save_history(history)
     best_validation_accuracy = history["val_accuracy"][best_epoch - 1]
     summary = {
@@ -655,6 +861,8 @@ def run_experiment(
     print(f"Saved correct predictions to: {output_path / 'correct_predictions.png'}")
     print(f"Saved incorrect predictions to: {output_path / 'incorrect_predictions.png'}")
     print(f"Saved confusion matrix to: {output_path / 'confusion_matrix.png'}")
+    print(f"Saved first conv filters to: {output_path / 'conv_filters_first.png'}")
+    print(f"Saved last conv filters to: {output_path / 'conv_filters_last.png'}")
     print(f"Saved training history to: {history_path}")
     print(f"Saved experiment summary to: {summary_path}")
     print(f"Saved executed notebook report to: {report_notebook_path}")
@@ -731,6 +939,42 @@ def parse_args():
         default=5,
         help="Stop after N epochs without validation loss improvement.",
     )
+    parser.add_argument(
+        "--weight-decay",
+        type=float,
+        default=0.0,
+        help="L2 regularization strength used by Adam.",
+    )
+    parser.add_argument(
+        "--l1-lambda",
+        type=float,
+        default=0.0,
+        help="L1 regularization strength added as an explicit loss penalty.",
+    )
+    parser.add_argument(
+        "--input-noise-std",
+        type=float,
+        default=0.0,
+        help="Standard deviation for Gaussian noise added to training inputs.",
+    )
+    parser.add_argument(
+        "--adam-beta1",
+        type=float,
+        default=0.9,
+        help="Beta1 parameter for Adam.",
+    )
+    parser.add_argument(
+        "--adam-beta2",
+        type=float,
+        default=0.999,
+        help="Beta2 parameter for Adam.",
+    )
+    parser.add_argument(
+        "--adam-eps",
+        type=float,
+        default=1e-8,
+        help="Epsilon parameter for Adam.",
+    )
     return parser.parse_args()
 
 
@@ -747,6 +991,11 @@ def main():
         validation_ratio=args.validation_ratio,
         seed=args.seed,
         early_stopping_patience=args.early_stopping_patience,
+        weight_decay=args.weight_decay,
+        l1_lambda=args.l1_lambda,
+        input_noise_std=args.input_noise_std,
+        adam_betas=(args.adam_beta1, args.adam_beta2),
+        adam_eps=args.adam_eps,
     )
 
 

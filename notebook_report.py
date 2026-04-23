@@ -89,6 +89,8 @@ def create_report_notebook(run_dir):
             "    'correct_predictions.png',\n"
             "    'incorrect_predictions.png',\n"
             "    'confusion_matrix.png',\n"
+            "    'conv_filters_first.png',\n"
+            "    'conv_filters_last.png',\n"
             "]\n"
             "for plot_name in plot_files:\n"
             "    plot_path = RUN_DIR / plot_name\n"

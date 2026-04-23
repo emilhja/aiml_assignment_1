@@ -12,7 +12,13 @@ from nbclient import NotebookClient
 from main import AVAILABLE_MODELS, CURRENT_DIR, run_experiment
 
 
-DEFAULT_MODELS = ("cnn_small", "cnn_medium", "cnn_dropout")
+DEFAULT_MODELS = (
+    "cnn_small",
+    "cnn_medium",
+    "cnn_dropout",
+    "cnn_deep_balanced",
+    "cnn_deep_wide",
+)
 
 
 def build_parser():
@@ -104,9 +110,23 @@ def create_comparison_notebook(comparison_root, summaries):
             "        'test_acc': summary['final_test_accuracy'],\n"
             "        'total_time_s': summary['total_training_time_seconds'],\n"
             "        'conv_channels': config.get('conv_channels'),\n"
+            "        'num_conv_layers': config.get('num_conv_layers', 0),\n"
+            "        'trainable_parameters': config.get('trainable_parameters'),\n"
             "        'dropout': config.get('dropout', 0.0),\n"
+            "        'activation': config.get('activation'),\n"
             "    })\n"
             "rows"
+        ),
+        _markdown_cell(
+            "## Parameter-Aware Comparison\n\n"
+            "When evaluating architecture changes, models with very different parameter "
+            "counts should not be treated as a clean apples-to-apples comparison. "
+            "Use the table below to compare depth changes while keeping parameter "
+            "counts reasonably close."
+        ),
+        _code_cell(
+            "sorted_rows = sorted(rows, key=lambda row: row['trainable_parameters'] or 0)\n"
+            "sorted_rows"
         ),
         _markdown_cell("## Saved Plots"),
         _code_cell(
@@ -122,6 +142,47 @@ def create_comparison_notebook(comparison_root, summaries):
             "    for plot_name in plot_files:\n"
             "        print(plot_name)\n"
             "        display(Image(filename=str(run_dir / plot_name)))\n"
+        ),
+        _markdown_cell(
+            "## First Vs Later Convolution Filters\n\n"
+            "The first convolution layer usually learns simple local patterns such as "
+            "edges, stroke directions, and small blobs. Later convolution layers usually "
+            "combine those earlier responses into more structured digit parts, for example "
+            "curves, corners, loops, and stroke combinations that are useful for whole-digit "
+            "recognition."
+        ),
+        _code_cell(
+            "filter_plot_files = [\n"
+            "    'conv_filters_first.png',\n"
+            "    'conv_filters_last.png',\n"
+            "]\n"
+            "\n"
+            "for run_name in RUN_NAMES:\n"
+            "    run_dir = Path(RUN_DIRS[run_name])\n"
+            "    print(f'\\n## {run_name}')\n"
+            "    for plot_name in filter_plot_files:\n"
+            "        plot_path = run_dir / plot_name\n"
+            "        print(plot_name)\n"
+            "        if plot_path.exists():\n"
+            "            display(Image(filename=str(plot_path)))\n"
+            "        else:\n"
+            "            print('Missing:', plot_path)\n"
+        ),
+        _markdown_cell("## Architecture Notes"),
+        _code_cell(
+            "for row in rows:\n"
+            "    print(\n"
+            "        f\"{row['model']}: {row['num_conv_layers']} conv layers | \"\n"
+            "        f\"channels={row['conv_channels']} | \"\n"
+            "        f\"params={row['trainable_parameters']:,} | \"\n"
+            "        f\"activation={row['activation']} | dropout={row['dropout']}\"\n"
+            "    )\n"
+            "\n"
+            "print('\\nInterpretation:')\n"
+            "print('- More convolution layers increase representational depth.')\n"
+            "print('- First-layer filters tend to be edge or stroke detectors.')\n"
+            "print('- Later-layer filters represent combinations of earlier patterns.')\n"
+            "print('- Compare accuracy together with parameter count and training time.')\n"
         ),
         _markdown_cell("## Final Remark"),
         _code_cell(
@@ -155,6 +216,7 @@ def create_comparison_notebook(comparison_root, summaries):
             "        'model': run_name,\n"
             "        'test_acc': summary['final_test_accuracy'],\n"
             "        'time_s': summary['total_training_time_seconds'],\n"
+            "        'params': load_json(run_dir / 'config.json').get('trainable_parameters', 0),\n"
             "    })\n"
             "\n"
             "best_test_acc = max(row['test_acc'] for row in rows)\n"
@@ -163,14 +225,23 @@ def create_comparison_notebook(comparison_root, summaries):
             "for row in rows:\n"
             "    row['acc_gap'] = best_test_acc - row['test_acc']\n"
             "    row['time_ratio'] = row['time_s'] / fastest_time if fastest_time > 0 else 1.0\n"
+            "    row['param_ratio'] = row['params'] / min(candidate['params'] for candidate in rows if candidate['params'] > 0)\n"
             "\n"
-            "preferred_order = {'cnn_medium': 0, 'cnn_small': 1, 'cnn_dropout': 2, 'mlp': 3}\n"
+            "preferred_order = {\n"
+            "    'cnn_medium': 0,\n"
+            "    'cnn_deep_balanced': 1,\n"
+            "    'cnn_deep_wide': 2,\n"
+            "    'cnn_small': 3,\n"
+            "    'cnn_dropout': 4,\n"
+            "    'mlp': 5,\n"
+            "}\n"
             "recommended = min(\n"
             "    rows,\n"
             "    key=lambda row: (\n"
             "        row['acc_gap'] > 0.002,\n"
             "        row['acc_gap'],\n"
             "        row['time_ratio'] > 1.25,\n"
+            "        row['param_ratio'] > 1.8,\n"
             "        row['time_s'],\n"
             "        preferred_order.get(row['model'], 99),\n"
             "    ),\n"
