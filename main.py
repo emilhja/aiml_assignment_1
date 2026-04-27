@@ -2,6 +2,7 @@
 """Train an MNIST classification model and save experiment artifacts."""
 
 import argparse
+import subprocess
 from datetime import datetime
 from pathlib import Path
 from time import perf_counter
@@ -440,6 +441,26 @@ def format_elapsed_time(seconds):
     return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
 
 
+def get_git_revision(project_root):
+    """Return git commit metadata when the project is inside a git repository."""
+    try:
+        commit = subprocess.check_output(
+            ["git", "-C", str(project_root), "rev-parse", "HEAD"],
+            text=True,
+            stderr=subprocess.DEVNULL,
+        ).strip()
+        dirty = bool(
+            subprocess.check_output(
+                ["git", "-C", str(project_root), "status", "--porcelain"],
+                text=True,
+                stderr=subprocess.DEVNULL,
+            ).strip()
+        )
+        return {"git_commit": commit, "git_is_dirty": dirty}
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return {"git_commit": None, "git_is_dirty": None}
+
+
 def collect_predictions(model, data_loader, device):
     """Collect test images, labels, and predictions for post-run analysis."""
     model.eval()
@@ -665,6 +686,7 @@ def run_experiment(
         "device": str(device),
         "output_dir": str(output_path),
     }
+    config.update(get_git_revision(CURRENT_DIR))
     config.update(build_model_config(model_name, model_overrides=model_overrides))
     config["trainable_parameters"] = trainable_parameters
     config["num_conv_layers"] = len(config.get("conv_channels", []))

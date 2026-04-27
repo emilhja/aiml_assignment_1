@@ -61,6 +61,8 @@ class ExperimentDB:
                 augmentation_description TEXT NOT NULL,
                 device TEXT NOT NULL,
                 output_dir TEXT NOT NULL,
+                git_commit TEXT,
+                git_is_dirty INTEGER,
                 best_epoch INTEGER,
                 best_validation_loss REAL,
                 best_validation_accuracy REAL,
@@ -74,6 +76,8 @@ class ExperimentDB:
             )
             """
         )
+        self._ensure_column("runs", "git_commit", "TEXT")
+        self._ensure_column("runs", "git_is_dirty", "INTEGER")
         cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS epoch_metrics (
@@ -90,6 +94,20 @@ class ExperimentDB:
                 FOREIGN KEY (run_id) REFERENCES runs(run_id) ON DELETE CASCADE
             )
             """
+        )
+        self.connection.commit()
+
+    def _ensure_column(self, table_name, column_name, column_type):
+        """Add a column to an existing table when upgrading an older database."""
+        cursor = self.connection.cursor()
+        existing_columns = {
+            row[1]
+            for row in cursor.execute(f"PRAGMA table_info({table_name})").fetchall()
+        }
+        if column_name in existing_columns:
+            return
+        cursor.execute(
+            f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_type}"
         )
         self.connection.commit()
 
@@ -116,8 +134,10 @@ class ExperimentDB:
                 augmentation_enabled,
                 augmentation_description,
                 device,
-                output_dir
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                output_dir,
+                git_commit,
+                git_is_dirty
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 run_name,
@@ -138,6 +158,12 @@ class ExperimentDB:
                 config["augmentation_description"],
                 config["device"],
                 config["output_dir"],
+                config.get("git_commit"),
+                (
+                    int(config["git_is_dirty"])
+                    if config.get("git_is_dirty") is not None
+                    else None
+                ),
             ),
         )
         self.connection.commit()
