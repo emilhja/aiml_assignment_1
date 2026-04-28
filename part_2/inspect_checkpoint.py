@@ -46,7 +46,7 @@ def main():
     parser.add_argument(
         "checkpoint",
         nargs="?",
-        default="outputs/Part2",
+        default=Path(__file__).resolve().parent / "outputs",
         help="Path to the .pt checkpoint file.",
     )
     args = parser.parse_args()

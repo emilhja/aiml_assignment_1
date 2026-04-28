@@ -6,7 +6,7 @@ It is intended as a compact reference for the report and for rerunning experimen
 
 ## 1. Model Families
 
-The project currently includes the following model families in [main.py](C:\Users\emil_\vscode\Assignment1\main.py):
+The project currently includes the following model families in [main.py](C:\Users\emil_\vscode\Assignment1\part_2\main.py):
 
 | Model name | Type | Main idea |
 | --- | --- | --- |
@@ -25,14 +25,14 @@ These parameters define the model architecture itself.
 
 | Parameter | Meaning | Implemented in | Tested values / examples |
 | --- | --- | --- | --- |
-| `conv_channels` | Number of convolution filters per conv layer | `main.py`, `hyperparameter_tuning.py` | `[16, 32]`, `[24, 48]`, `[24, 48, 64]`, `[32, 64]`, `[32, 64, 64]`, `[32, 64, 128]`, `[48, 96, 128]` |
+| `conv_channels` | Number of convolution filters per conv layer | `part_2/main.py`, `part_2/hyperparameter_tuning.py` | `[16, 32]`, `[24, 48]`, `[24, 48, 64]`, `[32, 64]`, `[32, 64, 64]`, `[32, 64, 128]`, `[48, 96, 128]` |
 | `num_conv_layers` | Number of convolution layers | derived from `conv_channels` | `2`, `3` |
-| `kernel_size` | Convolution kernel size | `main.py`, `hyperparameter_tuning.py` | `3`, `5` |
-| `pool_kernel_size` | Max-pooling kernel / stride | `main.py` | `2` |
-| `hidden_dim` | Size of dense classifier hidden layer | `main.py`, `hyperparameter_tuning.py` | preset-dependent, plus explicit tests with `64` and `512` |
-| `activation` | Activation function | `main.py`, `hyperparameter_tuning.py` | `ReLU`, `LeakyReLU` |
-| `dropout` | Dropout probability in classifier | `main.py`, `compare_regularization.py`, `hyperparameter_tuning.py` | `0.0`, `0.1`, `0.15`, `0.2`, `0.25`, `0.3` |
-| `batch_norm` | Batch normalization after convolution | `main.py`, `compare_regularization.py`, `hyperparameter_tuning.py` | `False`, `True` |
+| `kernel_size` | Convolution kernel size | `part_2/main.py`, `part_2/hyperparameter_tuning.py` | `3`, `5` |
+| `pool_kernel_size` | Max-pooling kernel / stride | `part_2/main.py` | `2` |
+| `hidden_dim` | Size of dense classifier hidden layer | `part_2/main.py`, `part_2/hyperparameter_tuning.py` | preset-dependent, plus explicit tests with `64` and `512` |
+| `activation` | Activation function | `part_2/main.py`, `part_2/hyperparameter_tuning.py` | `ReLU`, `LeakyReLU` |
+| `dropout` | Dropout probability in classifier | `part_2/main.py`, `part_2/compare_regularization.py`, `part_2/hyperparameter_tuning.py` | `0.0`, `0.1`, `0.15`, `0.2`, `0.25`, `0.3` |
+| `batch_norm` | Batch normalization after convolution | `part_2/main.py`, `part_2/compare_regularization.py`, `part_2/hyperparameter_tuning.py` | `False`, `True` |
 
 ## 3. Optimization Hyperparameters
 
@@ -45,7 +45,7 @@ These parameters control training and optimizer behavior.
 | `adam_beta2` | Adam second-moment coefficient | `0.999`, `0.995` |
 | `adam_eps` | Adam numerical stability term | `1e-8`, `1e-7` |
 | `epochs` | Number of training epochs | user-controlled at runtime, commonly `7` in comparison runs |
-| `batch_size` | Mini-batch size | runtime training parameter in `main.py` |
+| `batch_size` | Mini-batch size | runtime training parameter in `part_2/main.py` |
 
 ## 4. Regularization Methods
 
@@ -86,7 +86,7 @@ The architecture comparison work has tested:
 
 Main script:
 
-- [cnn_comparison.py](C:\Users\emil_\vscode\Assignment1\cnn_comparison.py)
+- [cnn_comparison.py](C:\Users\emil_\vscode\Assignment1\part_2\cnn_comparison.py)
 
 ### Regularization comparison
 
@@ -103,7 +103,7 @@ The regularization comparison has tested these focused setups:
 
 Main script:
 
-- [compare_regularization.py](C:\Users\emil_\vscode\Assignment1\compare_regularization.py)
+- [compare_regularization.py](C:\Users\emil_\vscode\Assignment1\part_2\compare_regularization.py)
 
 ### Hyperparameter tuning sweep
 
@@ -126,7 +126,7 @@ The hyperparameter tuning sweep has tested combinations of:
 
 Main script:
 
-- [hyperparameter_tuning.py](C:\Users\emil_\vscode\Assignment1\hyperparameter_tuning.py)
+- [hyperparameter_tuning.py](C:\Users\emil_\vscode\Assignment1\part_2\hyperparameter_tuning.py)
 
 ## 7. Parameters Explicitly Varied in the Tuning Runs
 

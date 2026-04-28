@@ -38,4 +38,4 @@ B = 1.2
 neuron = Neuron(W, B, LeakyReLU())
 y = neuron.forward(A)
 
-print(f"{y}")
+print(f"{y}") # Similar to A1_0 output is -0.10400000000000001

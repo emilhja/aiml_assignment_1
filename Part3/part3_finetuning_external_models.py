@@ -33,8 +33,8 @@ CURRENT_DIR = Path(__file__).resolve().parent.parent
 if str(CURRENT_DIR) not in sys.path:
     sys.path.insert(0, str(CURRENT_DIR))
 
-from model_optimisation import CheckpointManager
-from torch_gpu import describe_device, get_device
+from part_2.model_optimisation import CheckpointManager
+from part_2.torch_gpu import describe_device, get_device
 
 AVAILABLE_MODELS = (
     "scratch_cnn",
@@ -1218,8 +1218,12 @@ def train_model(
                     val_loss,
                     val_accuracy,
                 )
-                torch.save(payload, checkpoint_manager.best_path)
-                best_path = checkpoint_manager.best_path
+                try:
+                    checkpoint_manager._atomic_save(payload, checkpoint_manager.best_path)
+                    best_path = checkpoint_manager.best_path
+                except Exception as exc:
+                    print(f"Warning: failed to save best model checkpoint: {exc}")
+                    best_path = None
             else:
                 best_path = None
 

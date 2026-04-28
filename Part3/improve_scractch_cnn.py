@@ -16,7 +16,7 @@ CURRENT_DIR = Path(__file__).resolve().parent.parent
 if str(CURRENT_DIR) not in sys.path:
     sys.path.insert(0, str(CURRENT_DIR))
 
-from model_optimisation import CheckpointManager
+from part_2.model_optimisation import CheckpointManager
 from Part3.part3_finetuning_external_models import (
     build_confusion_matrix,
     build_data_loaders,
@@ -39,7 +39,7 @@ from Part3.part3_finetuning_external_models import (
     synchronize_device,
     train_one_epoch,
 )
-from torch_gpu import describe_device
+from part_2.torch_gpu import describe_device
 
 AVAILABLE_VARIANTS = (
     "baseline_v2",

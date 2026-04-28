@@ -2,6 +2,7 @@
 """Utilities for saving checkpoints and training history artifacts."""
 
 import json
+import os
 from pathlib import Path
 
 import torch
@@ -20,6 +21,17 @@ class CheckpointManager:
         self.history_path = self.output_dir / "training_history.json"
         self.config_path = self.output_dir / "config.json"
         self.summary_path = self.output_dir / "summary.json"
+
+    def _atomic_save(self, payload, dest_path):
+        """Write to a temp file then rename to avoid partial writes."""
+        dest_path = Path(dest_path)
+        tmp_path = dest_path.with_suffix(".tmp")
+        try:
+            torch.save(payload, tmp_path)
+            os.replace(tmp_path, dest_path)
+        except Exception as exc:
+            tmp_path.unlink(missing_ok=True)
+            raise exc
 
     def _build_payload(
         self,
@@ -70,7 +82,11 @@ class CheckpointManager:
             val_loss,
             val_accuracy,
         )
-        torch.save(payload, self.best_path)
+        try:
+            self._atomic_save(payload, self.best_path)
+        except Exception as exc:
+            print(f"Warning: failed to save best model checkpoint: {exc}")
+            return None
         return self.best_path
 
     def save_periodic(
@@ -99,7 +115,11 @@ class CheckpointManager:
             val_loss,
             val_accuracy,
         )
-        torch.save(payload, checkpoint_path)
+        try:
+            self._atomic_save(payload, checkpoint_path)
+        except Exception as exc:
+            print(f"Warning: failed to save periodic checkpoint epoch {epoch}: {exc}")
+            return None
         return checkpoint_path
 
     def save_history(self, history):

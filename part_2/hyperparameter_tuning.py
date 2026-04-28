@@ -6,10 +6,16 @@ import json
 from datetime import datetime
 from pathlib import Path
 
-import nbformat
-from nbclient import NotebookClient
-
-from main import CURRENT_DIR, run_experiment
+try:
+    from .main import OUTPUT_ROOT, run_experiment
+    from .notebook_templates import create_tuning_notebook
+    from .notebook_utils import execute_notebook
+except ImportError:
+    if __package__:
+        raise
+    from main import OUTPUT_ROOT, run_experiment
+    from notebook_templates import create_tuning_notebook
+    from notebook_utils import execute_notebook
 
 
 def build_parser():
@@ -318,185 +324,12 @@ def load_search_space(config_path):
     return json.loads(Path(config_path).read_text(encoding="utf-8"))
 
 
-def _markdown_cell(source):
-    """Build a markdown notebook cell."""
-    return nbformat.v4.new_markdown_cell(source=source)
-
-
-def _code_cell(source):
-    """Build a code notebook cell."""
-    return nbformat.v4.new_code_cell(source=source)
-
-
-def create_tuning_notebook(tuning_root, run_specs):
-    """Create a notebook that summarizes the tuning sweep."""
-    tuning_root = Path(tuning_root)
-    notebook_path = tuning_root / "tuning_report.ipynb"
-    run_dirs = {spec["run_name"]: str(tuning_root / spec["run_name"]) for spec in run_specs}
-    ordered_run_names = [spec["run_name"] for spec in run_specs]
-
-    notebook = nbformat.v4.new_notebook()
-    notebook.cells = [
-        _markdown_cell(
-            "# Hyperparameter Tuning Report\n\n"
-            "This notebook compares all tuning runs saved in this folder."
-        ),
-        _code_cell(
-            "import json\n"
-            "from pathlib import Path\n"
-            "import pandas as pd\n"
-            "\n"
-            f'ROOT_DIR = Path(r"{tuning_root}")\n'
-            f"RUN_NAMES = {ordered_run_names!r}\n"
-            f"RUN_DIRS = {run_dirs!r}\n"
-            f"RUN_SPECS = {run_specs!r}\n"
-            "\n"
-            "def load_json(path):\n"
-            "    return json.loads(Path(path).read_text(encoding='utf-8'))\n"
-        ),
-        _markdown_cell(
-            "## What Each Test Tries To Measure\n\n"
-            "This section explains the purpose of each tuning run before comparing the metrics."
-        ),
-        _code_cell(
-            "descriptions = [\n"
-            "    {\n"
-            "        'run': spec['run_name'],\n"
-            "        'description': spec.get('description', ''),\n"
-            "    }\n"
-            "    for spec in RUN_SPECS\n"
-            "]\n"
-            "pd.DataFrame(descriptions)"
-        ),
-        _markdown_cell("## Summary Table"),
-        _code_cell(
-            "rows = []\n"
-            "for run_name in RUN_NAMES:\n"
-            "    run_dir = Path(RUN_DIRS[run_name])\n"
-            "    config = load_json(run_dir / 'config.json')\n"
-            "    summary = load_json(run_dir / 'summary.json')\n"
-            "    spec = next(spec for spec in RUN_SPECS if spec['run_name'] == run_name)\n"
-            "    rows.append({\n"
-            "        'run': run_name,\n"
-            "        'description': spec.get('description', ''),\n"
-            "        'model': config['model_name'],\n"
-            "        'conv_channels': config.get('conv_channels'),\n"
-            "        'activation': config.get('activation'),\n"
-            "        'dropout': config.get('dropout', 0.0),\n"
-            "        'batch_norm': config.get('batch_norm', False),\n"
-            "        'weight_decay': config.get('weight_decay', 0.0),\n"
-            "        'l1_lambda': config.get('l1_lambda', 0.0),\n"
-            "        'input_noise_std': config.get('input_noise_std', 0.0),\n"
-            "        'learning_rate': config.get('learning_rate'),\n"
-            "        'adam_beta1': config.get('adam_beta1'),\n"
-            "        'adam_beta2': config.get('adam_beta2'),\n"
-            "        'adam_eps': config.get('adam_eps'),\n"
-            "        'augmentation_enabled': config.get('augmentation_enabled'),\n"
-            "        'test_acc': summary['final_test_accuracy'],\n"
-            "        'best_val_acc': summary['best_validation_accuracy'],\n"
-            "        'best_val_loss': summary['best_validation_loss'],\n"
-            "        'time_s': summary['total_training_time_seconds'],\n"
-            "        'params': config.get('trainable_parameters', 0),\n"
-            "    })\n"
-            "sorted(rows, key=lambda row: row['test_acc'], reverse=True)"
-        ),
-        _markdown_cell("## Pandas Overview"),
-        _code_cell(
-            "df = pd.DataFrame(rows)\n"
-            "display_columns = [\n"
-            "    'run',\n"
-            "    'description',\n"
-            "    'model',\n"
-            "    'conv_channels',\n"
-            "    'activation',\n"
-            "    'dropout',\n"
-            "    'batch_norm',\n"
-            "    'weight_decay',\n"
-            "    'l1_lambda',\n"
-            "    'input_noise_std',\n"
-            "    'learning_rate',\n"
-            "    'adam_beta1',\n"
-            "    'adam_beta2',\n"
-            "    'adam_eps',\n"
-            "    'augmentation_enabled',\n"
-            "    'params',\n"
-            "    'best_val_loss',\n"
-            "    'best_val_acc',\n"
-            "    'test_acc',\n"
-            "    'time_s',\n"
-            "]\n"
-            "df[display_columns].sort_values(by='test_acc', ascending=False).reset_index(drop=True)"
-        ),
-        _markdown_cell(
-            "## Tuning Takeaway\n\n"
-            "Hyperparameter tuning means trying many plausible settings, then selecting "
-            "the best trade-off between validation behavior, test accuracy, runtime, and "
-            "model size."
-        ),
-        _code_cell(
-            "best_by_test = max(rows, key=lambda row: row['test_acc'])\n"
-            "best_by_val_loss = min(rows, key=lambda row: row['best_val_loss'])\n"
-            "{'best_by_test': best_by_test, 'best_by_val_loss': best_by_val_loss}"
-        ),
-        _markdown_cell(
-            "## Final Summary\n\n"
-            "This section is generated from the saved metrics for the current tuning sweep."
-        ),
-        _code_cell(
-            "best_test = max(rows, key=lambda row: row['test_acc'])\n"
-            "best_val_acc = max(rows, key=lambda row: row['best_val_acc'])\n"
-            "best_val_loss = min(rows, key=lambda row: row['best_val_loss'])\n"
-            "fastest = min(rows, key=lambda row: row['time_s'])\n"
-            "smallest = min((row for row in rows if row['params'] > 0), key=lambda row: row['params'])\n"
-            "\n"
-            "lines = [\n"
-            "    'English summary:',\n"
-            "    (\n"
-            "        f\"Best test run: {best_test['run']} ({best_test['test_acc']:.2%}) using {best_test['model']}. \"\n"
-            "        f\"Best validation accuracy: {best_val_acc['run']} ({best_val_acc['best_val_acc']:.2%}). \"\n"
-            "        f\"Best validation loss: {best_val_loss['run']} ({best_val_loss['best_val_loss']:.4f}).\"\n"
-            "    ),\n"
-            "    (\n"
-            "        f\"Fastest run: {fastest['run']} ({fastest['time_s']:.2f}s). \"\n"
-            "        f\"Smallest model: {smallest['run']} ({smallest['params']:,} trainable parameters).\"\n"
-            "    ),\n"
-            "]\n"
-            "\n"
-            "print('\\n'.join(lines))\n"
-            "lines"
-        ),
-    ]
-    notebook.metadata["language_info"] = {"name": "python"}
-    notebook.metadata["kernelspec"] = {
-        "display_name": "Python 3",
-        "language": "python",
-        "name": "python3",
-    }
-    notebook_path.write_text(nbformat.writes(notebook, version=4), encoding="utf-8")
-    return notebook_path
-
-
-def execute_notebook(notebook_path, timeout=600):
-    """Execute a notebook in place so outputs are saved."""
-    notebook_path = Path(notebook_path)
-    notebook = nbformat.read(notebook_path, as_version=4)
-    client = NotebookClient(
-        notebook,
-        timeout=timeout,
-        kernel_name="python3",
-        resources={"metadata": {"path": str(notebook_path.parent)}},
-    )
-    client.execute()
-    notebook_path.write_text(nbformat.writes(notebook, version=4), encoding="utf-8")
-    return notebook_path
-
-
 def main():
     """Run the full tuning sweep."""
     args = build_parser().parse_args()
     run_specs = load_search_space(args.config_path)
     tuning_timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
-    tuning_root = CURRENT_DIR / "outputs" / "Part2" / f"hyperparameter_tuning_{tuning_timestamp}"
+    tuning_root = OUTPUT_ROOT / f"hyperparameter_tuning_{tuning_timestamp}"
     print(f"Saving tuning runs under: {tuning_root}")
 
     for spec in run_specs:

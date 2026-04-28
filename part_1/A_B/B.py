@@ -25,7 +25,7 @@ class Layer:
 
     def forward(self, inputs):
         inputs = np.array(inputs, dtype=float)
-        z = self.weights @ inputs + self.bias # The @ operator is a shorthand for np.dot() when used with 2D arrays, and it performs matrix multiplication. In this case, it multiplies the weights matrix with the input vector, which is exactly what we want to do in a fully connected layer.
+        z = self.weights @ inputs + self.bias # The @ operator is a shorthand for np.dot()
         return self.activation(z)
 
 # A is vector
@@ -42,4 +42,4 @@ layer = Layer(W, B, LeakyReLU())
 # y = (3, ) * (3,3) = (3, ) -> the output is a vector with 3 elements, one for each neuron in the layer
 y = layer.forward(A)
 
-print(y)
+print(y) # outout is [-0.104   6.4    -0.0715]

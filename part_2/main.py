@@ -13,13 +13,22 @@ import torch
 from matplotlib import colors
 from torch import nn
 
-from experiment_db import ExperimentDB
-from mnist_loader import get_mnist_loaders
-from model_optimisation import CheckpointManager
-from notebook_report import create_report_notebook, execute_report_notebook
-from torch_gpu import describe_device, get_device
+try:
+    from .experiment_db import ExperimentDB
+    from .mnist_loader import get_mnist_loaders
+    from .model_optimisation import CheckpointManager
+    from .notebook_report import create_report_notebook, execute_report_notebook
+    from .torch_gpu import describe_device, get_device
+except ImportError:
+    from experiment_db import ExperimentDB
+    from mnist_loader import get_mnist_loaders
+    from model_optimisation import CheckpointManager
+    from notebook_report import create_report_notebook, execute_report_notebook
+    from torch_gpu import describe_device, get_device
 
-CURRENT_DIR = Path(__file__).resolve().parent
+PART_2_DIR = Path(__file__).resolve().parent
+CURRENT_DIR = PART_2_DIR.parent
+OUTPUT_ROOT = PART_2_DIR / "outputs"
 AVAILABLE_MODELS = (
     "mlp",
     "cnn_small",
@@ -647,12 +656,11 @@ def run_experiment(
     )
 
     if output_dir is None:
-        output_root = CURRENT_DIR / "outputs" / "Part2"
-        output_path = build_run_output_dir(output_root, model_name)
+        output_path = build_run_output_dir(OUTPUT_ROOT, model_name)
     else:
         output_path = Path(output_dir)
         if not output_path.is_absolute():
-            output_path = CURRENT_DIR / output_path
+            output_path = OUTPUT_ROOT / output_path
 
     output_path.mkdir(parents=True, exist_ok=True)
     checkpoint_manager = CheckpointManager(
@@ -902,7 +910,7 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description="Train the MNIST CNN and save experiment artifacts.",
         epilog=(
-            "Example: python main.py --epochs 10 --batch-size 128 "
+            "Example: python part_2/main.py --epochs 10 --batch-size 128 "
             "--learning-rate 0.0005 --model cnn_dropout"
         ),
     )

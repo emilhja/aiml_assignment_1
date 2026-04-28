@@ -55,5 +55,5 @@ def list_experiments(db_path):
 
 
 if __name__ == "__main__":
-    default_db = Path("outputs/Part2/experiments.db")
+    default_db = Path(__file__).resolve().parent / "outputs" / "experiments.db"
     list_experiments(default_db)
