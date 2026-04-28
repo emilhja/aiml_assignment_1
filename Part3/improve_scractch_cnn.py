@@ -33,6 +33,10 @@ from Part3.part3_finetuning_external_models import (
     save_history_json,
     save_prediction_examples,
     seed_everything,
+    seconds_per_image,
+    milliseconds_per_image,
+    images_per_second,
+    synchronize_device,
     train_one_epoch,
 )
 from torch_gpu import describe_device
@@ -552,16 +556,30 @@ def run_variant(args, variant_name, output_root):
     )
     model.load_state_dict(best_checkpoint["model_state_dict"])
     test_loss_fn = nn.CrossEntropyLoss()
+    synchronize_device(device)
+    test_eval_start = perf_counter()
     test_loss, test_accuracy = evaluate(
         model=model,
         data_loader=data_bundle["test_loader"],
         loss_fn=test_loss_fn,
         device=device,
     )
+    synchronize_device(device)
+    test_evaluation_time_seconds = perf_counter() - test_eval_start
+
+    synchronize_device(device)
+    prediction_collection_start = perf_counter()
     test_images, test_labels, test_predictions = collect_predictions(
         model=model,
         data_loader=data_bundle["test_loader"],
         device=device,
+    )
+    synchronize_device(device)
+    test_prediction_collection_time_seconds = (
+        perf_counter() - prediction_collection_start
+    )
+    final_test_total_time_seconds = (
+        test_evaluation_time_seconds + test_prediction_collection_time_seconds
     )
     confusion = build_confusion_matrix(
         labels=test_labels,
@@ -614,6 +632,23 @@ def run_variant(args, variant_name, output_root):
         "final_test_loss": test_loss,
         "final_test_accuracy": test_accuracy,
         "final_test_macro_f1": macro_f1,
+        "test_evaluation_time_seconds": test_evaluation_time_seconds,
+        "test_evaluation_images_per_second": images_per_second(
+            data_bundle["test_size"],
+            test_evaluation_time_seconds,
+        ),
+        "test_evaluation_time_per_image_seconds": seconds_per_image(
+            test_evaluation_time_seconds,
+            data_bundle["test_size"],
+        ),
+        "test_evaluation_time_per_image_ms": milliseconds_per_image(
+            test_evaluation_time_seconds,
+            data_bundle["test_size"],
+        ),
+        "test_prediction_collection_time_seconds": (
+            test_prediction_collection_time_seconds
+        ),
+        "final_test_total_time_seconds": final_test_total_time_seconds,
         "stopped_early": False,
         "epochs_completed": len(history["train_loss"]),
         "best_model_path": str(checkpoint_manager.best_path),
@@ -633,7 +668,9 @@ def run_variant(args, variant_name, output_root):
 
     print(
         f"{variant_name} complete | test_loss={test_loss:.4f} | "
-        f"test_acc={test_accuracy:.2%} | macro_f1={macro_f1:.4f}"
+        f"test_acc={test_accuracy:.2%} | macro_f1={macro_f1:.4f} | "
+        f"test_eval_time={test_evaluation_time_seconds:.2f}s | "
+        f"test_total_time={final_test_total_time_seconds:.2f}s"
     )
     return summary
 

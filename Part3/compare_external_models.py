@@ -22,10 +22,16 @@ from Part3.part3_finetuning_external_models import (
 
 DEFAULT_MODELS = (
     "scratch_cnn",
+    "deeper_cnn",
     "resnet18_transfer",
     "resnet50_transfer",
     "mobilenet_v3_transfer",
 )
+TRANSFER_MODELS = {
+    "mobilenet_v3_transfer",
+    "resnet18_transfer",
+    "resnet50_transfer",
+}
 
 
 def build_parser():
@@ -52,6 +58,33 @@ def build_parser():
         default=None,
         help="Fine-tuning epochs. Defaults depend on the selected model.",
     )
+    parser.add_argument(
+        "--deeper-cnn-epochs",
+        type=int,
+        default=80,
+        help=(
+            "Total epochs for deeper_cnn when --epochs-head is not explicitly set. "
+            "Defaults to 60 for the comparison run."
+        ),
+    )
+    parser.add_argument(
+        "--scratch-cnn-epochs",
+        type=int,
+        default=50,
+        help=(
+            "Total epochs for scratch_cnn when epoch stage overrides are not "
+            "explicitly set. Defaults to 50 for the comparison run."
+        ),
+    )
+    parser.add_argument(
+        "--transfer-epochs",
+        type=int,
+        default=25,
+        help=(
+            "Total epochs for transfer models when epoch stage overrides are not "
+            "explicitly set. Defaults to 25 for the comparison run."
+        ),
+    )
     parser.add_argument("--learning-rate-head", type=float, default=1e-3)
     parser.add_argument("--learning-rate-finetune", type=float, default=1e-4)
     parser.add_argument("--validation-ratio", type=float, default=0.1)
@@ -71,6 +104,35 @@ def validate_models(model_names):
             + ", ".join(unknown_models)
             + f". Available models: {', '.join(AVAILABLE_MODELS)}"
         )
+
+
+def split_total_epochs(total_epochs, first_stage_epochs=3):
+    """Split a total epoch budget into first-stage and second-stage epochs."""
+    if total_epochs <= 0:
+        raise ValueError("Epoch counts must be positive.")
+    first_stage = min(first_stage_epochs, total_epochs)
+    second_stage = total_epochs - first_stage
+    return first_stage, second_stage
+
+
+def resolve_comparison_epochs(model_name, args):
+    """Resolve comparison-specific epoch defaults for one model."""
+    if model_name == "deeper_cnn":
+        default_head, default_finetune = args.deeper_cnn_epochs, 0
+    elif model_name == "scratch_cnn":
+        default_head, default_finetune = split_total_epochs(args.scratch_cnn_epochs)
+    elif model_name in TRANSFER_MODELS:
+        default_head, default_finetune = split_total_epochs(args.transfer_epochs)
+    else:
+        default_head, default_finetune = None, None
+
+    epochs_head = default_head if args.epochs_head is None else args.epochs_head
+    epochs_finetune = (
+        default_finetune
+        if args.epochs_finetune is None
+        else args.epochs_finetune
+    )
+    return epochs_head, epochs_finetune
 
 
 def _markdown_cell(source):
@@ -134,6 +196,10 @@ def create_comparison_notebook(comparison_root, summaries):
             "        'test_acc': summary['final_test_accuracy'],\n"
             "        'macro_f1': summary['final_test_macro_f1'],\n"
             "        'time_s': summary['total_training_time_seconds'],\n"
+            "        'test_eval_time_s': summary.get('test_evaluation_time_seconds'),\n"
+            "        'test_total_time_s': summary.get('final_test_total_time_seconds'),\n"
+            "        'test_images_per_s': summary.get('test_evaluation_images_per_second'),\n"
+            "        'test_ms_per_image': summary.get('test_evaluation_time_per_image_ms'),\n"
             "        'trainable_parameters': summary['trainable_parameters'],\n"
             "        'total_parameters': summary['total_parameters'],\n"
             "    })\n"
@@ -151,7 +217,7 @@ def create_comparison_notebook(comparison_root, summaries):
         ),
         _markdown_cell("## Parameter-Aware View"),
         _code_cell(
-            "comparison_df[['model', 'test_acc', 'macro_f1', 'time_s', 'trainable_parameters', 'total_parameters']]"
+            "comparison_df[['model', 'test_acc', 'macro_f1', 'time_s', 'test_eval_time_s', 'test_total_time_s', 'test_images_per_s', 'test_ms_per_image', 'trainable_parameters', 'total_parameters']]"
         ),
         _markdown_cell("## Saved Plots"),
         _code_cell(
@@ -202,8 +268,14 @@ def create_comparison_notebook(comparison_root, summaries):
         _code_cell(
             "best_run = comparison_df.iloc[0]\n"
             "fastest_run = comparison_df.sort_values(by='time_s', ascending=True).iloc[0]\n"
+            "timed_test_df = comparison_df.dropna(subset=['test_eval_time_s'])\n"
             "print(f\"Best test accuracy: {best_run['model']} ({best_run['test_acc']:.2%})\")\n"
-            "print(f\"Fastest run: {fastest_run['model']} ({fastest_run['time_s']:.2f}s)\")"
+            "print(f\"Fastest training run: {fastest_run['model']} ({fastest_run['time_s']:.2f}s)\")\n"
+            "if not timed_test_df.empty:\n"
+            "    fastest_test_run = timed_test_df.sort_values(by='test_eval_time_s', ascending=True).iloc[0]\n"
+            "    print(f\"Fastest test evaluation: {fastest_test_run['model']} ({fastest_test_run['test_eval_time_s']:.2f}s)\")\n"
+            "else:\n"
+            "    print('Fastest test evaluation: unavailable in these summaries')"
         ),
     ]
     notebook.metadata["language_info"] = {"name": "python"}
@@ -250,12 +322,15 @@ def main():
         output_dir = comparison_root / model_name
         print(f"\n=== {model_name} ===")
         print(f"Output directory: {output_dir}")
+        epochs_head, epochs_finetune = resolve_comparison_epochs(model_name, args)
+        print(f"Epoch schedule: head={epochs_head}, finetune={epochs_finetune}")
+
         run_args = Namespace(
             model=model_name,
             dataset_root=args.dataset_root,
             batch_size=args.batch_size,
-            epochs_head=args.epochs_head,
-            epochs_finetune=args.epochs_finetune,
+            epochs_head=epochs_head,
+            epochs_finetune=epochs_finetune,
             learning_rate_head=args.learning_rate_head,
             learning_rate_finetune=args.learning_rate_finetune,
             validation_ratio=args.validation_ratio,
@@ -279,6 +354,7 @@ def main():
             f"test_acc={summary['final_test_accuracy']:.2%} | "
             f"macro_f1={summary['final_test_macro_f1']:.4f} | "
             f"time={summary['total_training_time_seconds']:.2f}s | "
+            f"test_eval_time={summary.get('test_evaluation_time_seconds', float('nan')):.2f}s | "
             f"summary={summary_path}"
         )
 

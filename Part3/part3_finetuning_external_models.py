@@ -625,6 +625,34 @@ def evaluate(model, data_loader, loss_fn, device):
     return total_loss / total_samples, total_correct / total_samples
 
 
+def synchronize_device(device):
+    """Synchronize CUDA work before/after timing measurements."""
+    if torch.device(device).type == "cuda":
+        torch.cuda.synchronize(device)
+
+
+def seconds_per_image(total_seconds, num_images):
+    """Return average seconds per image, or None when unavailable."""
+    if num_images <= 0 or total_seconds <= 0:
+        return None
+    return total_seconds / num_images
+
+
+def milliseconds_per_image(total_seconds, num_images):
+    """Return average milliseconds per image, or None when unavailable."""
+    per_image = seconds_per_image(total_seconds, num_images)
+    if per_image is None:
+        return None
+    return per_image * 1000.0
+
+
+def images_per_second(num_images, total_seconds):
+    """Return image throughput, or None when unavailable."""
+    if num_images <= 0 or total_seconds <= 0:
+        return None
+    return num_images / total_seconds
+
+
 def collect_predictions(model, data_loader, device):
     """Collect test tensors and predictions."""
     model.eval()
@@ -1358,16 +1386,30 @@ def run_experiment(args):
     )
     model.load_state_dict(best_checkpoint["model_state_dict"])
     loss_fn = nn.CrossEntropyLoss()
+    synchronize_device(device)
+    test_eval_start = perf_counter()
     test_loss, test_accuracy = evaluate(
         model=model,
         data_loader=data_bundle["test_loader"],
         loss_fn=loss_fn,
         device=device,
     )
+    synchronize_device(device)
+    test_evaluation_time_seconds = perf_counter() - test_eval_start
+
+    synchronize_device(device)
+    prediction_collection_start = perf_counter()
     test_images, test_labels, test_predictions = collect_predictions(
         model=model,
         data_loader=data_bundle["test_loader"],
         device=device,
+    )
+    synchronize_device(device)
+    test_prediction_collection_time_seconds = (
+        perf_counter() - prediction_collection_start
+    )
+    final_test_total_time_seconds = (
+        test_evaluation_time_seconds + test_prediction_collection_time_seconds
     )
     macro_f1 = compute_macro_f1(
         labels=test_labels,
@@ -1424,6 +1466,23 @@ def run_experiment(args):
         "final_test_loss": test_loss,
         "final_test_accuracy": test_accuracy,
         "final_test_macro_f1": macro_f1,
+        "test_evaluation_time_seconds": test_evaluation_time_seconds,
+        "test_evaluation_images_per_second": images_per_second(
+            data_bundle["test_size"],
+            test_evaluation_time_seconds,
+        ),
+        "test_evaluation_time_per_image_seconds": seconds_per_image(
+            test_evaluation_time_seconds,
+            data_bundle["test_size"],
+        ),
+        "test_evaluation_time_per_image_ms": milliseconds_per_image(
+            test_evaluation_time_seconds,
+            data_bundle["test_size"],
+        ),
+        "test_prediction_collection_time_seconds": (
+            test_prediction_collection_time_seconds
+        ),
+        "final_test_total_time_seconds": final_test_total_time_seconds,
         "stopped_early": False,
         "epochs_completed": len(history["train_loss"]),
         "best_model_path": str(checkpoint_manager.best_path),
@@ -1443,7 +1502,12 @@ def run_experiment(args):
     print(f"Saved training history to: {history_path}")
     print(f"Saved experiment summary to: {summary_path}")
     print(f"Saved executed notebook report to: {report_notebook_path}")
-    print(f"Final test_loss={test_loss:.4f} | test_acc={test_accuracy:.2%} | macro_f1={macro_f1:.4f}")
+    print(
+        f"Final test_loss={test_loss:.4f} | test_acc={test_accuracy:.2%} | "
+        f"macro_f1={macro_f1:.4f} | "
+        f"test_eval_time={test_evaluation_time_seconds:.2f}s | "
+        f"test_total_time={final_test_total_time_seconds:.2f}s"
+    )
     return summary_path
 
 
