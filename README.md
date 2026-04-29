@@ -103,15 +103,16 @@ Inspect saved experiments:
 
 ## Running Part 3
 
-Run a single Oxford-IIIT Pet model:
+Run the best Part 2 CNN architecture adapted to Oxford-IIIT Pet:
 
 ```bash
-./venv/Scripts/python.exe part_3/part3_finetuning_external_models.py --model resnet18_transfer
+./venv/Scripts/python.exe part_3/part3_finetuning_external_models.py --model part2_cnn_deep_wide
 ```
 
 Available models:
 
 ```text
+part2_cnn_deep_wide
 scratch_cnn
 deeper_cnn
 resnet18_transfer
@@ -119,23 +120,32 @@ resnet50_transfer
 mobilenet_v3_transfer
 ```
 
+`part2_cnn_deep_wide` is adapted from the best Part 2 CNN architecture, `cnn_deep_wide`: three convolution layers with channels `[32, 64, 128]`, a dense hidden layer of 256 units, and ReLU activations. In Part 3 it uses RGB input, two output classes, and adaptive pooling for the larger pet images.
+
 Run improved scratch CNN variants:
 
 ```bash
 ./venv/Scripts/python.exe part_3/improve_scractch_cnn.py --variants baseline_v2 deeper_cnn residual_cnn --epochs 25
 ```
 
-Run the external model comparison. This script runs the selected models one after another and then creates a comparison notebook:
+Run only the Part 2 CNN adaptation through the comparison script:
 
 ```bash
-./venv/Scripts/python.exe part_3/compare_external_models.py
+./venv/Scripts/python.exe part_3/compare_external_models.py --models part2_cnn_deep_wide
+```
+
+Run the full comparison set:
+
+```bash
+./venv/Scripts/python.exe part_3/compare_external_models.py \
+  --models part2_cnn_deep_wide scratch_cnn deeper_cnn resnet18_transfer resnet50_transfer mobilenet_v3_transfer
 ```
 
 Quick Part 3 test run:
 
 ```bash
 ./venv/Scripts/python.exe part_3/compare_external_models.py \
-  --models resnet18_transfer mobilenet_v3_transfer \
+  --models part2_cnn_deep_wide \
   --epochs-head 1 \
   --epochs-finetune 1 \
   --test-ratio 0.1
@@ -181,3 +191,4 @@ Part D is sort of skipped since CUDA was implemented already in C
 Part 3
 Here transferred learning was tested with some different models.
 I also tried with an own CNN but it was not even close to matching the pretrained models
+Part 3 includes `part2_cnn_deep_wide`, which is the best Part 2 CNN architecture adapted to the Oxford-IIIT Pet binary cat/dog task.

@@ -20,6 +20,7 @@ from part_3.part3_finetuning_external_models import (
 )
 
 DEFAULT_MODELS = (
+    "part2_cnn_deep_wide",
     "scratch_cnn",
     "deeper_cnn",
     "resnet18_transfer",
@@ -116,7 +117,7 @@ def split_total_epochs(total_epochs, first_stage_epochs=3):
 
 def resolve_comparison_epochs(model_name, args):
     """Resolve comparison-specific epoch defaults for one model."""
-    if model_name == "deeper_cnn":
+    if model_name in {"part2_cnn_deep_wide", "deeper_cnn"}:
         default_head, default_finetune = args.deeper_cnn_epochs, 0
     elif model_name == "scratch_cnn":
         default_head, default_finetune = split_total_epochs(args.scratch_cnn_epochs)

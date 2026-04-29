@@ -36,6 +36,7 @@ from part_2.torch_gpu import describe_device, get_device
 from part_3.notebook_report import create_report_notebook, execute_report_notebook
 
 AVAILABLE_MODELS = (
+    "part2_cnn_deep_wide",
     "scratch_cnn",
     "deeper_cnn",
     "resnet18_transfer",
@@ -59,7 +60,7 @@ def parse_args():
     parser.add_argument(
         "--model",
         choices=AVAILABLE_MODELS,
-        default="resnet18_transfer",
+        default="part2_cnn_deep_wide",
     )
     parser.add_argument(
         "--dataset-root",
@@ -233,6 +234,35 @@ class ScratchPetCNN(nn.Module):
             nn.ReLU(inplace=True),
             nn.Dropout(p=0.2),
             nn.Linear(128, num_classes),
+        )
+
+    def forward(self, images):
+        features = self.features(images)
+        return self.classifier(features)
+
+
+class Part2DeepWidePetCNN(nn.Module):
+    """Part 2 cnn_deep_wide architecture adapted for RGB pet images."""
+
+    def __init__(self, num_classes=2):
+        super().__init__()
+        self.features = nn.Sequential(
+            nn.Conv2d(3, 32, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+            nn.Conv2d(32, 64, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+            nn.Conv2d(64, 128, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+            nn.AdaptiveAvgPool2d((3, 3)),
+        )
+        self.classifier = nn.Sequential(
+            nn.Flatten(),
+            nn.Linear(128 * 3 * 3, 256),
+            nn.ReLU(),
+            nn.Linear(256, num_classes),
         )
 
     def forward(self, images):
@@ -433,6 +463,19 @@ def build_data_loaders(dataset_root, batch_size, validation_ratio, test_ratio, s
 
 def build_model(model_name):
     """Create the requested model and return stage metadata."""
+    if model_name == "part2_cnn_deep_wide":
+        model = Part2DeepWidePetCNN(num_classes=2)
+        return model, {
+            "weights_name": None,
+            "transfer_learning": False,
+            "backbone_name": "part2_cnn_deep_wide",
+            "part2_source_model": "cnn_deep_wide",
+            "variant_notes": (
+                "Part 2 best CNN architecture adapted from MNIST to RGB Oxford Pet "
+                "images with 3 output-pool spatial size and 2 output classes."
+            ),
+        }
+
     if model_name == "scratch_cnn":
         model = ScratchPetCNN(num_classes=2)
         return model, {
@@ -495,6 +538,8 @@ def build_model(model_name):
 
 def get_head_parameters(model, model_name):
     """Return the classifier parameters for head-only optimization."""
+    if model_name == "part2_cnn_deep_wide":
+        return list(model.parameters())
     if model_name == "scratch_cnn":
         return list(model.parameters())
     if model_name == "deeper_cnn":
@@ -510,7 +555,7 @@ def get_head_parameters(model, model_name):
 
 def set_trainable_parameters(model, model_name, stage_name):
     """Freeze or unfreeze trainable parameters for the current stage."""
-    if model_name in {"scratch_cnn", "deeper_cnn"}:
+    if model_name in {"part2_cnn_deep_wide", "scratch_cnn", "deeper_cnn"}:
         for parameter in model.parameters():
             parameter.requires_grad = True
         return
@@ -869,6 +914,7 @@ def save_history_json(history, output_path):
 def resolve_epoch_schedule(model_name, epochs_head, epochs_finetune):
     """Resolve model-specific default epoch schedules while preserving overrides."""
     default_schedules = {
+        "part2_cnn_deep_wide": (45, 0),
         "scratch_cnn": (3, 12),
         "deeper_cnn": (45, 0),
         "mobilenet_v3_transfer": (3, 12),
@@ -884,12 +930,12 @@ def resolve_epoch_schedule(model_name, epochs_head, epochs_finetune):
 def build_stage_plan(model_name, epochs_head, epochs_finetune, lr_head, lr_finetune):
     """Build the ordered training stages for the selected model."""
     stages = []
-    if model_name == "deeper_cnn":
+    if model_name in {"part2_cnn_deep_wide", "deeper_cnn"}:
         if epochs_head <= 0:
-            raise ValueError("deeper_cnn requires a positive --epochs-head value.")
+            raise ValueError(f"{model_name} requires a positive --epochs-head value.")
         return [
             {
-                "name": "scratch_improved",
+                "name": "part2_cnn_deep_wide" if model_name == "part2_cnn_deep_wide" else "scratch_improved",
                 "epochs": epochs_head,
                 "learning_rate": lr_head,
             }

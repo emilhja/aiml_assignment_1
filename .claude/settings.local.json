@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \"import json; nb = json.load\\(open\\(r'C:/Users/emil_/vscode/Assignment1/part_2/deep_dive.ipynb'\\)\\); print\\(f'Part 2: {len\\(nb[\\\\\"cells\\\\\"]\\)} cells, nbformat {nb[\\\\\"nbformat\\\\\"]}'\\)\")",
+      "Bash(python -c \"import json; nb = json.load\\(open\\(r'C:/Users/emil_/vscode/Assignment1/part_3/deep_dive.ipynb'\\)\\); print\\(f'Part 3: {len\\(nb[\\\\\"cells\\\\\"]\\)} cells, nbformat {nb[\\\\\"nbformat\\\\\"]}'\\)\")",
+      "Bash(python *)"
+    ]
+  }
+}
