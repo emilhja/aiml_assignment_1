@@ -35,12 +35,21 @@ Head-only (3 epochs, LR=1e-3) → Finetune (22 epochs, LR=1e-4)
 | ResNet50    | **99.62%** | 23.5M | 13.6 min |
 
 **Transfer learning wins decisively**
-Achieving near-perfect accuracy in 13 minutes, while the scratch CNN only reaches 77% after 21 minutes. 
+ResNet50 achieved near-perfect accuracy in 13 minutes, while the scratch CNN reached 77% after 21 minutes.
 The key advantage: Pretrained models have already been trained on more data and learned identifying features, which gives a head start.
 
-**MobileNetV3 efficiency:** 1.5M params → 97.36% accuracy in 9.3 minutes. This is good speed and accuracy for such a small model
+**MobileNetV3 efficiency:** 1.5M params → 97.36% accuracy in 9.3 minutes. This is good speed and accuracy for such a small model.
 
 **Key takeaways:**
 1. Transfer learning was very powerful and much more manual work would be needed to train a model close to that.
 2. The adapted Part 2 CNN shows that the MNIST architecture could transfer structurally to RGB images after changing the input channel count, but its 87.19% test accuracy still stayed clearly below the stronger scratch CNN and pretrained models.
-3. Amount of parmaters is not everything. Deeper CNN had 3M parametres compared to scratch CNN and MobilnetV3, but in the end MobileNetV3 was still better. Amount of parmeters is not the main priority.
+3. Parameter count is not everything. The deeper CNN had about 3.5M parameters, compared with the scratch CNN and MobileNetV3, but MobileNetV3 still performed better. Architecture and pretraining mattered more than parameter count alone.
+
+### Selected notebooks available
+
+The selected review notebooks are saved in `part_3/selected_outputs/`:
+
+- `external_model_comparison_2026-04-29_082032.ipynb`
+- `part2_cnn_deep_wide_2.ipynb`
+
+These notebooks include executed cells, plots, and tables for the results summarized above.

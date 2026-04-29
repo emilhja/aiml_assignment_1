@@ -19,11 +19,13 @@ part_2/
   cnn_comparison.py            CNN architecture comparison
   hyperparameter_tuning.py     Hyperparameter testing
   notebook_*.py                Notebook report generation helpers
+  selected_outputs/            Curated executed notebooks for review
 part_3/
   part3_finetuning_external_models.py
   improve_scractch_cnn.py
   compare_external_models.py
   notebook_*.py                Part 3 notebook report helpers
+  selected_outputs/            Curated executed notebooks for review
 docs/
   torch_gpu_install.md         GPU install notes
   tested_parameters.md         Tested Part 2 settings
@@ -153,6 +155,25 @@ Quick Part 3 test run:
 
 Part 3 writes artifacts under `part_3/outputs/`, including model checkpoints, plots, JSON summaries, and executed notebook reports.
 
+## Selected Outputs
+
+The full `outputs/` folders are generated artifacts and are ignored by git. A smaller review set is included under `selected_outputs/`:
+
+Part 2:
+
+- `part_2/selected_outputs/augmentation_comparison_2026-04-28_154632.ipynb`
+- `part_2/selected_outputs/cnn_comparison_2026-04-28_154826.ipynb`
+- `part_2/selected_outputs/combined_regularization.ipynb`
+- `part_2/selected_outputs/hyperparameter_tuning_2026-04-28_155935.ipynb`
+- `part_2/selected_outputs/regularization_comparison_2026-04-28_155225.ipynb`
+
+Part 3:
+
+- `part_3/selected_outputs/external_model_comparison_2026-04-29_082032.ipynb`
+- `part_3/selected_outputs/part2_cnn_deep_wide_2.ipynb`
+
+These notebooks contain executed cells and saved plots/tables for the main comparisons used in the summaries.
+
 ## Output Files
 
 Most runs save:
@@ -165,7 +186,7 @@ Most runs save:
 - `loss_curve.png`, `accuracy_curve.png`, `confusion_matrix.png`: visual diagnostics.
 - `report.ipynb` or `comparison_report.ipynb`: executed notebook report.
 
-The `data/`, `outputs/`, `part_2/outputs/`, and `part_3/outputs/` folders are generated artifacts and are ignored by git.
+The `data/`, `outputs/`, `part_2/outputs/`, and `part_3/outputs/` folders are generated artifacts and are ignored by git. The curated `part_2/selected_outputs/` and `part_3/selected_outputs/` notebooks are kept separately for assignment review.
 
 ## Notes
 
@@ -183,7 +204,7 @@ Part 1 implements and tests the introductory NumPy and PyTorch exercises, includ
 
 Part 2 is the main MNIST CNN experiment section. It compares different CNN architectures, augmentation variants, regularization configurations, and hyperparameter configurations. The best architecture comparison result was `cnn_deep_wide` with 99.26% test accuracy. The best tuning result was `tune_07_augmented`, which reached 99.39% test accuracy with about 206K trainable parameters and less than 90 seconds of training time.
 
-The Part 2 results suggest that deeper convolutional feature extraction helped more than simply widening the classifier (make sense with our data setup of 10 categories). Augmentation gave a small gain in this setup, while regularization methods such as dropout, batch normalization, weight decay, L1 regularization, and combined configurations were tested to compare their effect on overfitting and generalization.
+The Part 2 results suggest that deeper convolutional feature extraction helped more than simply widening the classifier, which is reasonable for a 10-class digit task. Augmentation gave a small gain in this setup, while regularization methods such as dropout, batch normalization, weight decay, L1 regularization, and combined configurations were tested to compare their effect on overfitting and generalization.
 
 Part 3 moves from MNIST to Oxford-IIIT Pet binary cat-vs-dog classification. It compares scratch CNN models with transfer-learning models: MobileNetV3-Small, ResNet18, and ResNet50. The same idea as Part 2 is also tested with `part2_cnn_deep_wide`, adapted from grayscale MNIST input to RGB pet images and two output classes.
 
