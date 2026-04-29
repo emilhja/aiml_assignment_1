@@ -1,10 +1,10 @@
-# Assignment 1
+# Assignment 1 AI1 in classic ML
 
 PyTorch experiments for the assignment. The repository is split into three parts:
 
-- `part_1`: introductory NumPy/PyTorch exercises and an MNIST training script.
+- `part_1`: Introductory NumPy/PyTorch exercises and an MNIST training script.
 - `part_2`: MNIST CNN experiments, regularization, augmentation, tuning, checkpoints, plots, SQLite experiment logging, and generated notebook reports.
-- `part_3`: Oxford-IIIT Pet cat-vs-dog experiments with scratch CNNs and transfer-learning models.
+- `part_3`: Oxford-IIIT Pet cat-vs-dog experiments with CNNs and transfer-learning models.
 
 ## Repository Layout
 
@@ -17,7 +17,7 @@ part_2/
   compare_augmentation.py      Augmentation comparison
   compare_regularization.py    Regularization comparison
   cnn_comparison.py            CNN architecture comparison
-  hyperparameter_tuning.py     Hand-picked tuning sweep
+  hyperparameter_tuning.py     Hyperparameter testing
   notebook_*.py                Notebook report generation helpers
 part_3/
   part3_finetuning_external_models.py
@@ -131,7 +131,7 @@ Run the external model comparison. This script runs the selected models one afte
 ./venv/Scripts/python.exe part_3/compare_external_models.py
 ```
 
-Quick Part 3 smoke run:
+Quick Part 3 test run:
 
 ```bash
 ./venv/Scripts/python.exe part_3/compare_external_models.py \
@@ -167,3 +167,16 @@ The `data/`, `outputs/`, `part_2/outputs/`, and `part_3/outputs/` folders are ge
 ```bash
 ./venv/Scripts/python.exe part_2/torch_gpu.py
 ```
+## Summary and conclusions
+
+Part 1
+Was implemented and tested in its differents forms. Not much to say
+
+Part 2
+The most comprehensisive task. Here a notebook creater is added for easier testing and follow up.
+The python scripts can be run with specific settings:
+e.g. ./venv/Scripts/python.exe part_2/cnn_comparison.py --epochs 5
+
+Part 3
+Here transferred learning was tested with some different models.
+I also tried with an own CNN but it was not even close to matching the pretrained models
