@@ -12,9 +12,9 @@ CURRENT_DIR = Path(__file__).resolve().parent.parent
 if str(CURRENT_DIR) not in sys.path:
     sys.path.insert(0, str(CURRENT_DIR))
 
-from Part3.notebook_templates import create_external_model_comparison_notebook
-from Part3.notebook_utils import execute_notebook
-from Part3.part3_finetuning_external_models import (
+from part_3.notebook_templates import create_external_model_comparison_notebook
+from part_3.notebook_utils import execute_notebook
+from part_3.part3_finetuning_external_models import (
     AVAILABLE_MODELS,
     run_experiment,
 )
@@ -38,7 +38,7 @@ def build_parser():
     parser = argparse.ArgumentParser(
         description="Compare scratch and transfer models on Oxford-IIIT Pet.",
         epilog=(
-            "Example: .\\venv\\Scripts\\python.exe Part3\\compare_external_models.py "
+            "Example: .\\venv\\Scripts\\python.exe part_3\\compare_external_models.py "
             "--epochs-head 1 --epochs-finetune 1 --models resnet18_transfer mobilenet_v3_transfer"
         ),
     )
@@ -141,12 +141,12 @@ def main():
     comparison_timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
     comparison_root = (
         CURRENT_DIR
-        / "Part3"
+        / "part_3"
         / "outputs"
         / f"external_model_comparison_{comparison_timestamp}"
     )
 
-    print(f"Saving Part3 comparison runs under: {comparison_root}")
+    print(f"Saving Part 3 comparison runs under: {comparison_root}")
 
     summaries = []
     for model_name in args.models:
@@ -176,7 +176,7 @@ def main():
         summary = json.loads(summary_path.read_text(encoding="utf-8"))
         summaries.append((model_name, summary_path, summary))
 
-    print("\nFinished Part3 comparison.")
+    print("\nFinished Part 3 comparison.")
     for model_name, summary_path, summary in summaries:
         print(
             f"{model_name}: "

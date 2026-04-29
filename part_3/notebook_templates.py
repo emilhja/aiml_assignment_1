@@ -44,7 +44,7 @@ def create_experiment_report_notebook(run_dir):
                 "if str(PROJECT_ROOT) not in sys.path:\n"
                 "    sys.path.insert(0, str(PROJECT_ROOT))\n"
                 "\n"
-                "from Part3.part3_finetuning_external_models import build_data_loaders, denormalize_image\n"
+                "from part_3.part3_finetuning_external_models import build_data_loaders, denormalize_image\n"
                 "\n"
                 "def load_json(path):\n"
                 "    return json.loads(Path(path).read_text(encoding='utf-8'))\n"
@@ -133,7 +133,7 @@ def create_experiment_report_notebook(run_dir):
             markdown_cell("## Re-Run This Experiment"),
             code_cell(
                 "from argparse import Namespace\n"
-                "from Part3.part3_finetuning_external_models import run_experiment\n"
+                "from part_3.part3_finetuning_external_models import run_experiment\n"
                 "\n"
                 "# Uncomment to rerun into a new folder.\n"
                 "# rerun_args = Namespace(\n"

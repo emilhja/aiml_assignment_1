@@ -17,8 +17,8 @@ if str(CURRENT_DIR) not in sys.path:
     sys.path.insert(0, str(CURRENT_DIR))
 
 from part_2.model_optimisation import CheckpointManager
-from Part3.notebook_report import create_report_notebook, execute_report_notebook
-from Part3.part3_finetuning_external_models import (
+from part_3.notebook_report import create_report_notebook, execute_report_notebook
+from part_3.part3_finetuning_external_models import (
     build_confusion_matrix,
     build_data_loaders,
     collect_predictions,
@@ -185,7 +185,7 @@ def build_parser():
     parser = argparse.ArgumentParser(
         description="Run improved scratch CNN experiments on Oxford-IIIT Pet.",
         epilog=(
-            "Example: .\\venv\\Scripts\\python.exe Part3\\improve_scractch_cnn.py "
+            "Example: .\\venv\\Scripts\\python.exe part_3\\improve_scractch_cnn.py "
             "--variants baseline_v2 deeper_cnn residual_cnn --epochs 25"
         ),
     )
@@ -307,7 +307,7 @@ def build_scheduler(optimizer, scheduler_name, epochs):
 def make_output_root(output_root):
     timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
     if output_root is None:
-        return CURRENT_DIR / "Part3" / "outputs" / f"scratch_improvement_{timestamp}"
+        return CURRENT_DIR / "part_3" / "outputs" / f"scratch_improvement_{timestamp}"
     return resolve_path(output_root)
 
 

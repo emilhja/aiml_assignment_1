@@ -4,7 +4,7 @@ PyTorch experiments for the assignment. The repository is split into three parts
 
 - `part_1`: introductory NumPy/PyTorch exercises and an MNIST training script.
 - `part_2`: MNIST CNN experiments, regularization, augmentation, tuning, checkpoints, plots, SQLite experiment logging, and generated notebook reports.
-- `Part3`: Oxford-IIIT Pet cat-vs-dog experiments with scratch CNNs and transfer-learning models.
+- `part_3`: Oxford-IIIT Pet cat-vs-dog experiments with scratch CNNs and transfer-learning models.
 
 ## Repository Layout
 
@@ -19,7 +19,7 @@ part_2/
   cnn_comparison.py            CNN architecture comparison
   hyperparameter_tuning.py     Hand-picked tuning sweep
   notebook_*.py                Notebook report generation helpers
-Part3/
+part_3/
   part3_finetuning_external_models.py
   improve_scractch_cnn.py
   compare_external_models.py
@@ -106,7 +106,7 @@ Inspect saved experiments:
 Run a single Oxford-IIIT Pet model:
 
 ```bash
-./venv/Scripts/python.exe Part3/part3_finetuning_external_models.py --model resnet18_transfer
+./venv/Scripts/python.exe part_3/part3_finetuning_external_models.py --model resnet18_transfer
 ```
 
 Available models:
@@ -122,26 +122,26 @@ mobilenet_v3_transfer
 Run improved scratch CNN variants:
 
 ```bash
-./venv/Scripts/python.exe Part3/improve_scractch_cnn.py --variants baseline_v2 deeper_cnn residual_cnn --epochs 25
+./venv/Scripts/python.exe part_3/improve_scractch_cnn.py --variants baseline_v2 deeper_cnn residual_cnn --epochs 25
 ```
 
 Run the external model comparison. This script runs the selected models one after another and then creates a comparison notebook:
 
 ```bash
-./venv/Scripts/python.exe Part3/compare_external_models.py
+./venv/Scripts/python.exe part_3/compare_external_models.py
 ```
 
 Quick Part 3 smoke run:
 
 ```bash
-./venv/Scripts/python.exe Part3/compare_external_models.py \
+./venv/Scripts/python.exe part_3/compare_external_models.py \
   --models resnet18_transfer mobilenet_v3_transfer \
   --epochs-head 1 \
   --epochs-finetune 1 \
   --test-ratio 0.1
 ```
 
-Part 3 writes artifacts under `Part3/outputs/`, including model checkpoints, plots, JSON summaries, and executed notebook reports.
+Part 3 writes artifacts under `part_3/outputs/`, including model checkpoints, plots, JSON summaries, and executed notebook reports.
 
 ## Output Files
 
@@ -155,7 +155,7 @@ Most runs save:
 - `loss_curve.png`, `accuracy_curve.png`, `confusion_matrix.png`: visual diagnostics.
 - `report.ipynb` or `comparison_report.ipynb`: executed notebook report.
 
-The `data/`, `outputs/`, `part_2/outputs/`, and `Part3/outputs/` folders are generated artifacts and are ignored by git.
+The `data/`, `outputs/`, `part_2/outputs/`, and `part_3/outputs/` folders are generated artifacts and are ignored by git.
 
 ## Notes
 

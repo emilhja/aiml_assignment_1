@@ -33,7 +33,7 @@ if str(CURRENT_DIR) not in sys.path:
 
 from part_2.model_optimisation import CheckpointManager
 from part_2.torch_gpu import describe_device, get_device
-from Part3.notebook_report import create_report_notebook, execute_report_notebook
+from part_3.notebook_report import create_report_notebook, execute_report_notebook
 
 AVAILABLE_MODELS = (
     "scratch_cnn",
@@ -52,7 +52,7 @@ def parse_args():
         description="Train scratch and transfer models on Oxford-IIIT Pet cat-vs-dog.",
         epilog=(
             "Example: .\\venv\\Scripts\\python.exe "
-            "Part3\\part3_finetuning_external_models.py "
+            "part_3\\part3_finetuning_external_models.py "
             "--model resnet18_transfer --epochs-head 2 --epochs-finetune 2"
         ),
     )
@@ -1105,7 +1105,7 @@ def run_experiment(args):
     )
 
     if args.output_dir is None:
-        output_root = CURRENT_DIR / "Part3" / "outputs"
+        output_root = CURRENT_DIR / "part_3" / "outputs"
         output_path = build_run_output_dir(output_root, args.model)
     else:
         output_path = resolve_path(args.output_dir)

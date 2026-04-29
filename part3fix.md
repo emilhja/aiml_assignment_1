@@ -2,18 +2,18 @@
 
   Evidence:
 
-  - External dataset: uses Oxford-IIIT Pet, mapped from 37 breeds to cat/dog in Part3/part3_finetuning_external_models.py:168 and loaded via
-    OxfordIIITPet at Part3/part3_finetuning_external_models.py:359.
-  - Classic learning: ScratchPetCNN and DeeperScratchPetCNN are custom models with random initialization, no pretrained weights, at Part3/
-    part3_finetuning_external_models.py:217 and Part3/part3_finetuning_external_models.py:276.
-  - Transfer learning: ResNet18/ResNet50/MobileNetV3 load pretrained torchvision weights and replace the classifier at Part3/
-    part3_finetuning_external_models.py:445. ResNet50 specifically uses ResNet50_Weights.DEFAULT at Part3/
+  - External dataset: uses Oxford-IIIT Pet, mapped from 37 breeds to cat/dog in part_3/part3_finetuning_external_models.py:168 and loaded via
+    OxfordIIITPet at part_3/part3_finetuning_external_models.py:359.
+  - Classic learning: ScratchPetCNN and DeeperScratchPetCNN are custom models with random initialization, no pretrained weights, at part_3/
+    part3_finetuning_external_models.py:217 and part_3/part3_finetuning_external_models.py:276.
+  - Transfer learning: ResNet18/ResNet50/MobileNetV3 load pretrained torchvision weights and replace the classifier at part_3/
+    part3_finetuning_external_models.py:445. ResNet50 specifically uses ResNet50_Weights.DEFAULT at part_3/
     part3_finetuning_external_models.py:481.
-  - Freeze/fine-tune behavior exists: pretrained models freeze everything except the head first, then unfreeze for fine-tuning in Part3/
+  - Freeze/fine-tune behavior exists: pretrained models freeze everything except the head first, then unfreeze for fine-tuning in part_3/
     part3_finetuning_external_models.py:522.
-  - Data augmentation is correctly train-only: random flip/affine/color jitter in Part3/part3_finetuning_external_models.py:302, while eval
+  - Data augmentation is correctly train-only: random flip/affine/color jitter in part_3/part3_finetuning_external_models.py:302, while eval
     uses resize/tensor/normalize only.
-  - Completed results exist in outputs/Part3/external_model_comparison_2026-04-28_162516.
+  - Completed results exist in part_3/outputs/external_model_comparison_2026-04-28_162516.
 
   Main saved results from that run:
 
@@ -25,14 +25,14 @@
 
   Issues to fix before submission:
 
-  - outputs/Part3/part3_summary_deep_dive.ipynb has an inconsistency: one markdown cell says MobileNetV3 used 15 epochs and deeper_cnn used
+  - part_3/outputs/part3_summary_deep_dive.ipynb has an inconsistency: one markdown cell says MobileNetV3 used 15 epochs and deeper_cnn used
     45, but the cited JSON summaries show MobileNetV3 used 25 and deeper_cnn used 80.
   - There is a newer partial comparison folder, external_model_comparison_2026-04-28_201309, with only three models. Make clear which run is
     the final reported run, preferably external_model_comparison_2026-04-28_162516.
   - Some notebook report text sounds polished/generic, especially sections like “Elevator Pitch”, “The Data Story”, and “Main Conclusions”.
     If this is your actual report text, rewrite it yourself from your own understanding. Do not ask AI to rewrite it.
 
-  Syntax check passed: python -m compileall Part3.
+  Syntax check passed: python -m compileall part_3.
 
   10 questions you should be able to answer:
 
