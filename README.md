@@ -179,16 +179,12 @@ The `data/`, `outputs/`, `part_2/outputs/`, and `part_3/outputs/` folders are ge
 ```
 ## Summary and conclusions
 
-Part 1
-Was implemented and tested in its differents forms. Not much to say
+Part 1 implements and tests the introductory NumPy and PyTorch exercises, including the first MNIST training script.
 
-Part 2
-The most comprehensisive task. Here a notebook creater is added for easier testing and follow up.
-The python scripts can be run with specific settings:
-e.g. ./venv/Scripts/python.exe part_2/cnn_comparison.py --epochs 5
-Part D is sort of skipped since CUDA was implemented already in C
+Part 2 is the main MNIST CNN experiment section. It compares different CNN architectures, augmentation variants, regularization configurations, and hyperparameter configurations. The best architecture comparison result was `cnn_deep_wide` with 99.26% test accuracy. The best tuning result was `tune_07_augmented`, which reached 99.39% test accuracy with about 206K trainable parameters and less than 90 seconds of training time.
 
-Part 3
-Here transferred learning was tested with some different models.
-I also tried with an own CNN but it was not even close to matching the pretrained models
-Part 3 includes `part2_cnn_deep_wide`, which is the best Part 2 CNN architecture adapted to the Oxford-IIIT Pet binary cat/dog task.
+The Part 2 results suggest that deeper convolutional feature extraction helped more than simply widening the classifier (make sense with our data setup of 10 categories). Augmentation gave a small gain in this setup, while regularization methods such as dropout, batch normalization, weight decay, L1 regularization, and combined configurations were tested to compare their effect on overfitting and generalization.
+
+Part 3 moves from MNIST to Oxford-IIIT Pet binary cat-vs-dog classification. It compares scratch CNN models with transfer-learning models: MobileNetV3-Small, ResNet18, and ResNet50. The same idea as Part 2 is also tested with `part2_cnn_deep_wide`, adapted from grayscale MNIST input to RGB pet images and two output classes.
+
+Transfer learning performed best on the smaller pet dataset. In the saved full comparison, the scratch CNN reached 77.08% test accuracy, the deeper CNN reached 94.00%, MobileNetV3 reached 97.36%, ResNet18 reached 98.99%, and ResNet50 reached 99.62%. This supports the conclusion that ImageNet-pretrained features give a strong starting point compared with training all weights from random initialization.
