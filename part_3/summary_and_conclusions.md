@@ -36,7 +36,7 @@ Head-only (3 epochs, LR=1e-3) → Finetune (22 epochs, LR=1e-4)
 
 **Transfer learning wins decisively**
 Achieving near-perfect accuracy in 13 minutes, while the scratch CNN only reaches 77% after 21 minutes. 
-The key advantage: ImageNet-pretrained weights encode already have been trained on large amounts of data and learned features, which gives a head start.
+The key advantage: Pretrained models have already been trained on more data and learned identifying features, which gives a head start.
 
 **MobileNetV3 efficiency:** 1.5M params → 97.36% accuracy in 9.3 minutes. This is good speed and accuracy for such a small model
 

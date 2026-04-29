@@ -2,7 +2,6 @@
 
 MNIST CNN experiments: architecture comparison, data augmentation, regularization, and hyperparameter tuning.
 
-All results loaded from the `outputs/` 
 ---
 **Experiments run:**
 - 5 CNN architectures
