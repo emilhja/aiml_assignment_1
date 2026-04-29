@@ -176,6 +176,7 @@ Part 2
 The most comprehensisive task. Here a notebook creater is added for easier testing and follow up.
 The python scripts can be run with specific settings:
 e.g. ./venv/Scripts/python.exe part_2/cnn_comparison.py --epochs 5
+Part D is sort of skipped since CUDA was implemented already in C
 
 Part 3
 Here transferred learning was tested with some different models.
