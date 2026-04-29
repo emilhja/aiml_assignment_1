@@ -8,13 +8,12 @@ from argparse import Namespace
 from datetime import datetime
 from pathlib import Path
 
-import nbformat
-from nbclient import NotebookClient
-
 CURRENT_DIR = Path(__file__).resolve().parent.parent
 if str(CURRENT_DIR) not in sys.path:
     sys.path.insert(0, str(CURRENT_DIR))
 
+from Part3.notebook_templates import create_external_model_comparison_notebook
+from Part3.notebook_utils import execute_notebook
 from Part3.part3_finetuning_external_models import (
     AVAILABLE_MODELS,
     run_experiment,
@@ -135,174 +134,6 @@ def resolve_comparison_epochs(model_name, args):
     return epochs_head, epochs_finetune
 
 
-def _markdown_cell(source):
-    """Build a markdown notebook cell."""
-    return nbformat.v4.new_markdown_cell(source=source)
-
-
-def _code_cell(source):
-    """Build a code notebook cell."""
-    return nbformat.v4.new_code_cell(source=source)
-
-
-def create_comparison_notebook(comparison_root, summaries):
-    """Create a runnable notebook that compares multiple Part 3 runs."""
-    comparison_root = Path(comparison_root)
-    notebook_path = comparison_root / "comparison_report.ipynb"
-    run_paths = {
-        run_name: str(summary_path.parent)
-        for run_name, summary_path, _summary in summaries
-    }
-    ordered_run_names = [run_name for run_name, _summary_path, _summary in summaries]
-
-    notebook = nbformat.v4.new_notebook()
-    notebook.cells = [
-        _markdown_cell(
-            "# Part 3 External Model Comparison\n\n"
-            "This notebook compares the scratch CNN baseline against the transfer-learning runs."
-        ),
-        _code_cell(
-            "import json\n"
-            "from pathlib import Path\n"
-            "\n"
-            "import matplotlib.pyplot as plt\n"
-            "import pandas as pd\n"
-            "from IPython.display import Image, display\n"
-            "\n"
-            f'COMPARISON_DIR = Path(r"{comparison_root}")\n'
-            f"RUN_NAMES = {ordered_run_names!r}\n"
-            f"RUN_DIRS = {run_paths!r}\n"
-            "\n"
-            "def load_json(path):\n"
-            "    return json.loads(Path(path).read_text(encoding='utf-8'))\n"
-        ),
-        _markdown_cell("## Summary Table"),
-        _code_cell(
-            "rows = []\n"
-            "for run_name in RUN_NAMES:\n"
-            "    run_dir = Path(RUN_DIRS[run_name])\n"
-            "    config = load_json(run_dir / 'config.json')\n"
-            "    summary = load_json(run_dir / 'summary.json')\n"
-            "    rows.append({\n"
-            "        'model': run_name,\n"
-            "        'backbone': config.get('backbone_name'),\n"
-            "        'transfer_learning': config.get('transfer_learning'),\n"
-            "        'weights': config.get('weights_name'),\n"
-            "        'best_epoch': summary['best_epoch'],\n"
-            "        'best_stage': summary['best_stage'],\n"
-            "        'best_val_loss': summary['best_validation_loss'],\n"
-            "        'best_val_acc': summary['best_validation_accuracy'],\n"
-            "        'test_loss': summary['final_test_loss'],\n"
-            "        'test_acc': summary['final_test_accuracy'],\n"
-            "        'macro_f1': summary['final_test_macro_f1'],\n"
-            "        'time_s': summary['total_training_time_seconds'],\n"
-            "        'test_eval_time_s': summary.get('test_evaluation_time_seconds'),\n"
-            "        'test_total_time_s': summary.get('final_test_total_time_seconds'),\n"
-            "        'test_images_per_s': summary.get('test_evaluation_images_per_second'),\n"
-            "        'test_ms_per_image': summary.get('test_evaluation_time_per_image_ms'),\n"
-            "        'trainable_parameters': summary['trainable_parameters'],\n"
-            "        'total_parameters': summary['total_parameters'],\n"
-            "    })\n"
-            "comparison_df = pd.DataFrame(rows).sort_values(by='test_acc', ascending=False).reset_index(drop=True)\n"
-            "comparison_df"
-        ),
-        _markdown_cell("## Accuracy Vs Runtime"),
-        _code_cell(
-            "ax = comparison_df.plot.scatter(x='time_s', y='test_acc', s=120, figsize=(7, 5))\n"
-            "for _, row in comparison_df.iterrows():\n"
-            "    ax.annotate(row['model'], (row['time_s'], row['test_acc']))\n"
-            "ax.grid(True, alpha=0.3)\n"
-            "ax.set_title('Accuracy vs Runtime')\n"
-            "plt.show()"
-        ),
-        _markdown_cell("## Parameter-Aware View"),
-        _code_cell(
-            "comparison_df[['model', 'test_acc', 'macro_f1', 'time_s', 'test_eval_time_s', 'test_total_time_s', 'test_images_per_s', 'test_ms_per_image', 'trainable_parameters', 'total_parameters']]"
-        ),
-        _markdown_cell("## Saved Plots"),
-        _code_cell(
-            "plot_files = [\n"
-            "    'loss_curve.png',\n"
-            "    'accuracy_curve.png',\n"
-            "    'confusion_matrix.png',\n"
-            "    'correct_predictions.png',\n"
-            "    'incorrect_predictions.png',\n"
-            "]\n"
-            "for run_name in RUN_NAMES:\n"
-            "    run_dir = Path(RUN_DIRS[run_name])\n"
-            "    print(f'\\n## {run_name}')\n"
-            "    for plot_name in plot_files:\n"
-            "        plot_path = run_dir / plot_name\n"
-            "        print(plot_name)\n"
-            "        if plot_path.exists():\n"
-            "            display(Image(filename=str(plot_path)))\n"
-            "        else:\n"
-            "            print('Missing:', plot_path)\n"
-        ),
-        _markdown_cell("## Per-Run Epoch Histories"),
-        _code_cell(
-            "history_frames = []\n"
-            "for run_name in RUN_NAMES:\n"
-            "    run_dir = Path(RUN_DIRS[run_name])\n"
-            "    history_df = pd.DataFrame(load_json(run_dir / 'training_history.json'))\n"
-            "    history_df['epoch'] = range(1, len(history_df) + 1)\n"
-            "    history_df['model'] = run_name\n"
-            "    history_frames.append(history_df)\n"
-            "history_all = pd.concat(history_frames, ignore_index=True)\n"
-            "history_all.head()"
-        ),
-        _code_cell(
-            "for metric in ['val_accuracy', 'val_loss']:\n"
-            "    plt.figure(figsize=(8, 4))\n"
-            "    for run_name in RUN_NAMES:\n"
-            "        subset = history_all[history_all['model'] == run_name]\n"
-            "        plt.plot(subset['epoch'], subset[metric], marker='o', label=run_name)\n"
-            "    plt.title(metric)\n"
-            "    plt.xlabel('epoch')\n"
-            "    plt.grid(True, alpha=0.3)\n"
-            "    plt.legend()\n"
-            "    plt.tight_layout()\n"
-            "    plt.show()"
-        ),
-        _markdown_cell("## Final Remark"),
-        _code_cell(
-            "best_run = comparison_df.iloc[0]\n"
-            "fastest_run = comparison_df.sort_values(by='time_s', ascending=True).iloc[0]\n"
-            "timed_test_df = comparison_df.dropna(subset=['test_eval_time_s'])\n"
-            "print(f\"Best test accuracy: {best_run['model']} ({best_run['test_acc']:.2%})\")\n"
-            "print(f\"Fastest training run: {fastest_run['model']} ({fastest_run['time_s']:.2f}s)\")\n"
-            "if not timed_test_df.empty:\n"
-            "    fastest_test_run = timed_test_df.sort_values(by='test_eval_time_s', ascending=True).iloc[0]\n"
-            "    print(f\"Fastest test evaluation: {fastest_test_run['model']} ({fastest_test_run['test_eval_time_s']:.2f}s)\")\n"
-            "else:\n"
-            "    print('Fastest test evaluation: unavailable in these summaries')"
-        ),
-    ]
-    notebook.metadata["language_info"] = {"name": "python"}
-    notebook.metadata["kernelspec"] = {
-        "display_name": "Python 3",
-        "language": "python",
-        "name": "python3",
-    }
-    notebook_path.write_text(nbformat.writes(notebook, version=4), encoding="utf-8")
-    return notebook_path
-
-
-def execute_notebook(notebook_path, timeout=1800):
-    """Execute a notebook in place so outputs are saved."""
-    notebook_path = Path(notebook_path)
-    notebook = nbformat.read(notebook_path, as_version=4)
-    client = NotebookClient(
-        notebook,
-        timeout=timeout,
-        kernel_name="python3",
-        resources={"metadata": {"path": str(notebook_path.parent)}},
-    )
-    client.execute()
-    notebook_path.write_text(nbformat.writes(notebook, version=4), encoding="utf-8")
-    return notebook_path
-
-
 def main():
     """Run the requested Part 3 models and create a comparison notebook."""
     args = build_parser().parse_args()
@@ -310,8 +141,8 @@ def main():
     comparison_timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
     comparison_root = (
         CURRENT_DIR
-        / "outputs"
         / "Part3"
+        / "outputs"
         / f"external_model_comparison_{comparison_timestamp}"
     )
 
@@ -358,8 +189,8 @@ def main():
             f"summary={summary_path}"
         )
 
-    notebook_path = create_comparison_notebook(comparison_root, summaries)
-    execute_notebook(notebook_path)
+    notebook_path = create_external_model_comparison_notebook(comparison_root, summaries)
+    execute_notebook(notebook_path, timeout=1800)
     print(f"\nSaved executed comparison notebook to: {notebook_path}")
 
 

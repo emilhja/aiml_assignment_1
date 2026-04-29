@@ -11,11 +11,9 @@ from pathlib import Path
 from time import perf_counter
 
 import matplotlib.pyplot as plt
-import nbformat
 import numpy as np
 import torch
 from matplotlib import colors
-from nbclient import NotebookClient
 from torch import nn
 from torch.utils.data import DataLoader, Dataset, Subset
 from torchvision import transforms
@@ -35,6 +33,7 @@ if str(CURRENT_DIR) not in sys.path:
 
 from part_2.model_optimisation import CheckpointManager
 from part_2.torch_gpu import describe_device, get_device
+from Part3.notebook_report import create_report_notebook, execute_report_notebook
 
 AVAILABLE_MODELS = (
     "scratch_cnn",
@@ -45,16 +44,6 @@ AVAILABLE_MODELS = (
 )
 IMAGENET_MEAN = (0.485, 0.456, 0.406)
 IMAGENET_STD = (0.229, 0.224, 0.225)
-
-
-def _markdown_cell(source):
-    """Build a markdown notebook cell."""
-    return nbformat.v4.new_markdown_cell(source=source)
-
-
-def _code_cell(source):
-    """Build a code notebook cell."""
-    return nbformat.v4.new_code_cell(source=source)
 
 
 def parse_args():
@@ -892,173 +881,6 @@ def resolve_epoch_schedule(model_name, epochs_head, epochs_finetune):
     return resolved_head, resolved_finetune
 
 
-def create_report_notebook(run_dir):
-    """Create an editable notebook report for a Part 3 run."""
-    run_dir = Path(run_dir)
-    notebook_path = run_dir / "report.ipynb"
-
-    notebook = nbformat.v4.new_notebook()
-    notebook.cells = [
-        _markdown_cell(
-            "# Part 3 Transfer Learning Report\n\n"
-            f"Run folder: `{run_dir.name}`\n\n"
-            "This notebook loads the saved run artifacts, rebuilds pandas tables from the "
-            "JSON files, and includes cells you can adjust and rerun."
-        ),
-        _code_cell(
-            "import json\n"
-            "import sys\n"
-            "from pathlib import Path\n"
-            "\n"
-            "import matplotlib.pyplot as plt\n"
-            "import pandas as pd\n"
-            "import torch\n"
-            "from IPython.display import Image, display\n"
-            "\n"
-            f'PROJECT_ROOT = Path(r"{CURRENT_DIR}")\n'
-            f'RUN_DIR = Path(r"{run_dir}")\n'
-            "CONFIG_PATH = RUN_DIR / 'config.json'\n"
-            "SUMMARY_PATH = RUN_DIR / 'summary.json'\n"
-            "HISTORY_PATH = RUN_DIR / 'training_history.json'\n"
-            "\n"
-            "if str(PROJECT_ROOT) not in sys.path:\n"
-            "    sys.path.insert(0, str(PROJECT_ROOT))\n"
-            "\n"
-            "from Part3.part3_finetuning_external_models import build_data_loaders, denormalize_image\n"
-            "\n"
-            "def load_json(path):\n"
-            "    return json.loads(Path(path).read_text(encoding='utf-8'))\n"
-            "\n"
-            "config = load_json(CONFIG_PATH)\n"
-            "summary = load_json(SUMMARY_PATH)\n"
-            "history = load_json(HISTORY_PATH)\n"
-            "print(f'Loaded run: {RUN_DIR.name}')"
-        ),
-        _markdown_cell("## Config And Summary"),
-        _code_cell(
-            "config_df = pd.DataFrame([\n"
-            "    {'field': key, 'value': value}\n"
-            "    for key, value in config.items()\n"
-            "])\n"
-            "summary_df = pd.DataFrame([\n"
-            "    {'metric': key, 'value': value}\n"
-            "    for key, value in summary.items()\n"
-            "])\n"
-            "config_df"
-        ),
-        _code_cell("summary_df"),
-        _markdown_cell("## Epoch History"),
-        _code_cell(
-            "history_df = pd.DataFrame(history)\n"
-            "history_df.index = history_df.index + 1\n"
-            "history_df.index.name = 'epoch'\n"
-            "history_df"
-        ),
-        _markdown_cell("## Metric Curves From JSON"),
-        _code_cell(
-            "fig, axes = plt.subplots(1, 2, figsize=(12, 4))\n"
-            "history_df[['train_loss', 'val_loss']].plot(ax=axes[0], marker='o', title='Loss')\n"
-            "history_df[['train_accuracy', 'val_accuracy']].plot(ax=axes[1], marker='o', title='Accuracy')\n"
-            "axes[0].grid(True, alpha=0.3)\n"
-            "axes[1].grid(True, alpha=0.3)\n"
-            "plt.tight_layout()\n"
-            "plt.show()"
-        ),
-        _markdown_cell("## Rebuild The Dataset"),
-        _code_cell(
-            "data_bundle = build_data_loaders(\n"
-            "    dataset_root=Path(config['dataset_root']),\n"
-            "    batch_size=config['batch_size'],\n"
-            "    validation_ratio=config['validation_ratio'],\n"
-            "    test_ratio=config['test_ratio'],\n"
-            "    seed=config['seed'],\n"
-            "    num_workers=config.get('num_workers', 0),\n"
-            ")\n"
-            "pd.DataFrame([\n"
-            "    {'split': 'train', 'samples': data_bundle['train_size']},\n"
-            "    {'split': 'validation', 'samples': data_bundle['val_size']},\n"
-            "    {'split': 'test', 'samples': data_bundle['test_size']},\n"
-            "])"
-        ),
-        _markdown_cell("## Preview A Training Batch"),
-        _code_cell(
-            "images, labels = next(iter(data_bundle['train_loader']))\n"
-            "fig, axes = plt.subplots(2, 4, figsize=(12, 6))\n"
-            "axes = axes.flatten()\n"
-            "for axis in axes:\n"
-            "    axis.axis('off')\n"
-            "for index in range(min(8, len(images))):\n"
-            "    axes[index].imshow(denormalize_image(images[index]))\n"
-            "    axes[index].set_title(data_bundle['class_names'][int(labels[index])])\n"
-            "plt.tight_layout()\n"
-            "plt.show()"
-        ),
-        _markdown_cell("## Saved Artifacts"),
-        _code_cell(
-            "plot_files = [\n"
-            "    'loss_curve.png',\n"
-            "    'accuracy_curve.png',\n"
-            "    'confusion_matrix.png',\n"
-            "    'correct_predictions.png',\n"
-            "    'incorrect_predictions.png',\n"
-            "]\n"
-            "for plot_name in plot_files:\n"
-            "    plot_path = RUN_DIR / plot_name\n"
-            "    print(f'\\n### {plot_name}')\n"
-            "    if plot_path.exists():\n"
-            "        display(Image(filename=str(plot_path)))\n"
-            "    else:\n"
-            "        print('Missing:', plot_path)"
-        ),
-        _markdown_cell("## Re-Run This Experiment"),
-        _code_cell(
-            "from argparse import Namespace\n"
-            "from Part3.part3_finetuning_external_models import run_experiment\n"
-            "\n"
-            "# Uncomment to rerun into a new folder.\n"
-            "# rerun_args = Namespace(\n"
-            "#     model=config['model_name'],\n"
-            "#     dataset_root=config['dataset_root'],\n"
-            "#     batch_size=config['batch_size'],\n"
-            "#     epochs_head=config['epochs_head'],\n"
-            "#     epochs_finetune=config['epochs_finetune'],\n"
-            "#     learning_rate_head=config['learning_rate_head'],\n"
-            "#     learning_rate_finetune=config['learning_rate_finetune'],\n"
-            "#     validation_ratio=config['validation_ratio'],\n"
-            "#     test_ratio=config['test_ratio'],\n"
-            "#     seed=config['seed'],\n"
-            "#     output_dir=str(RUN_DIR.parent / f'{RUN_DIR.name}_rerun'),\n"
-            "#     checkpoint_interval=config['checkpoint_interval'],\n"
-            "#     num_workers=config.get('num_workers', 0),\n"
-            "# )\n"
-            "# run_experiment(rerun_args)"
-        ),
-    ]
-    notebook.metadata["language_info"] = {"name": "python"}
-    notebook.metadata["kernelspec"] = {
-        "display_name": "Python 3",
-        "language": "python",
-        "name": "python3",
-    }
-    notebook_path.write_text(nbformat.writes(notebook, version=4), encoding="utf-8")
-    return notebook_path
-
-
-def execute_report_notebook(notebook_path, timeout=1200):
-    """Execute a notebook in place so outputs are saved."""
-    notebook_path = Path(notebook_path)
-    notebook = nbformat.read(notebook_path, as_version=4)
-    client = NotebookClient(
-        notebook,
-        timeout=timeout,
-        kernel_name="python3",
-        resources={"metadata": {"path": str(notebook_path.parent)}},
-    )
-    client.execute()
-    notebook_path.write_text(nbformat.writes(notebook, version=4), encoding="utf-8")
-    return notebook_path
-
-
 def build_stage_plan(model_name, epochs_head, epochs_finetune, lr_head, lr_finetune):
     """Build the ordered training stages for the selected model."""
     stages = []
@@ -1283,7 +1105,7 @@ def run_experiment(args):
     )
 
     if args.output_dir is None:
-        output_root = CURRENT_DIR / "outputs" / "Part3"
+        output_root = CURRENT_DIR / "Part3" / "outputs"
         output_path = build_run_output_dir(output_root, args.model)
     else:
         output_path = resolve_path(args.output_dir)

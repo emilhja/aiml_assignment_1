@@ -17,12 +17,12 @@ if str(CURRENT_DIR) not in sys.path:
     sys.path.insert(0, str(CURRENT_DIR))
 
 from part_2.model_optimisation import CheckpointManager
+from Part3.notebook_report import create_report_notebook, execute_report_notebook
 from Part3.part3_finetuning_external_models import (
     build_confusion_matrix,
     build_data_loaders,
     collect_predictions,
     compute_macro_f1,
-    create_report_notebook,
     evaluate,
     get_git_revision,
     get_device,
@@ -307,7 +307,7 @@ def build_scheduler(optimizer, scheduler_name, epochs):
 def make_output_root(output_root):
     timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
     if output_root is None:
-        return CURRENT_DIR / "outputs" / "Part3" / f"scratch_improvement_{timestamp}"
+        return CURRENT_DIR / "Part3" / "outputs" / f"scratch_improvement_{timestamp}"
     return resolve_path(output_root)
 
 
@@ -663,7 +663,6 @@ def run_variant(args, variant_name, output_root):
     }
     checkpoint_manager.save_summary(summary)
     report_notebook_path = create_report_notebook(output_dir)
-    from Part3.part3_finetuning_external_models import execute_report_notebook
     execute_report_notebook(report_notebook_path)
 
     print(
