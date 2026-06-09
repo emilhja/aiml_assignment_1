@@ -1,0 +1,13 @@
+{
+  "best_epoch": 9,
+  "best_validation_loss": 0.034427921971849476,
+  "best_validation_accuracy": 0.9905,
+  "time_to_best_model_seconds": 67.00311880000027,
+  "total_training_time_seconds": 105.56565349999983,
+  "average_epoch_time_seconds": 7.419162478571382,
+  "final_test_loss": 0.029896179074978862,
+  "final_test_accuracy": 0.9915,
+  "stopped_early": true,
+  "epochs_completed": 14,
+  "best_model_path": "C:\\Users\\emil_\\vscode\\Assignment1\\part_2\\outputs\\cnn_comparison_2026-05-02_125807\\cnn_medium\\best_model.pt"
+}

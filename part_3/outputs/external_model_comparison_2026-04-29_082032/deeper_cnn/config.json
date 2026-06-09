@@ -1,0 +1,79 @@
+{
+  "task_name": "oxford_pet_cat_vs_dog",
+  "label_mode": "species",
+  "class_names": [
+    "cat",
+    "dog"
+  ],
+  "breed_count": 37,
+  "breed_names_preview": [
+    "abyssinian",
+    "american bulldog",
+    "american pit bull terrier",
+    "basset hound",
+    "beagle",
+    "bengal",
+    "birman",
+    "bombay",
+    "boxer",
+    "british shorthair"
+  ],
+  "model_name": "deeper_cnn",
+  "batch_size": 32,
+  "epochs_head": 80,
+  "epochs_finetune": 0,
+  "learning_rate_head": 0.001,
+  "learning_rate_finetune": 0.0001,
+  "validation_ratio": 0.1,
+  "test_ratio": 1.0,
+  "seed": 42,
+  "checkpoint_interval": 1,
+  "num_workers": 0,
+  "dataset_root": "C:\\Users\\emil_\\vscode\\Assignment1\\data",
+  "output_dir": "C:\\Users\\emil_\\vscode\\Assignment1\\Part3\\outputs\\external_model_comparison_2026-04-29_082032\\deeper_cnn",
+  "device": "cuda:0",
+  "image_size": [
+    224,
+    224
+  ],
+  "normalization_mean": [
+    0.485,
+    0.456,
+    0.406
+  ],
+  "normalization_std": [
+    0.229,
+    0.224,
+    0.225
+  ],
+  "train_transform": "Resize(224x224) -> RandomHorizontalFlip -> RandomAffine -> ColorJitter -> ToTensor -> Normalize(ImageNet)",
+  "eval_transform": "Resize(224x224) -> ToTensor -> Normalize(ImageNet)",
+  "train_size": 3312,
+  "validation_size": 368,
+  "test_size": 3669,
+  "total_parameters": 3485666,
+  "initial_trainable_parameters": 3485666,
+  "stage_plan": [
+    {
+      "name": "scratch_improved",
+      "epochs": 80,
+      "learning_rate": 0.001
+    }
+  ],
+  "run_started_at": "2026-04-29T08:42:34",
+  "optimizer_name": "AdamW",
+  "scheduler_name": "cosine",
+  "weight_decay": 0.0001,
+  "label_smoothing": 0.05,
+  "use_class_weights": true,
+  "class_weights": [
+    1.352053165435791,
+    0.6479468941688538
+  ],
+  "weights_name": null,
+  "transfer_learning": false,
+  "backbone_name": "deeper_cnn",
+  "variant_notes": "Higher-capacity CNN with class-weighted loss.",
+  "git_commit": "628553f943c9ea725c236fb9c8c21a825aea8d6e",
+  "git_is_dirty": false
+}

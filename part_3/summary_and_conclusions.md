@@ -1,6 +1,6 @@
 # Part 3 — Summary and conclusions
 
-**Dataset:** Oxford-IIIT Pet (cat vs. dog binary classification)  
+**Dataset:** Oxford-IIIT Pet (cat vs. dog binary classification). Cat/dog separated by capital_letter or not.
 **Models compared:** Part2 CNN Deep Wide, Scratch CNN, Deeper CNN, ResNet18, ResNet50, MobileNetV3-Small  
 **Key question:** Does transfer learning outperform training from scratch on a small dataset?
 

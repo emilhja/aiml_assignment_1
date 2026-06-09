@@ -1,0 +1,13 @@
+{
+  "best_epoch": 7,
+  "best_validation_loss": 0.030431300651126852,
+  "best_validation_accuracy": 0.9916666666666667,
+  "time_to_best_model_seconds": 58.48753090000173,
+  "total_training_time_seconds": 59.81046470000001,
+  "average_epoch_time_seconds": 8.344181057142643,
+  "final_test_loss": 0.03143739774574642,
+  "final_test_accuracy": 0.9905,
+  "stopped_early": false,
+  "epochs_completed": 7,
+  "best_model_path": "C:\\Users\\emil_\\vscode\\Assignment1\\part_2\\outputs\\hyperparameter_tuning_2026-04-28_155935\\tune_13_leaky_deep_bn\\best_model.pt"
+}

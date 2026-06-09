@@ -1,0 +1,47 @@
+{
+  "batch_size": 64,
+  "epochs": 30,
+  "learning_rate": 0.001,
+  "checkpoint_interval": 5,
+  "validation_ratio": 0.1,
+  "seed": 42,
+  "early_stopping_patience": 25,
+  "optimizer_name": "Adam",
+  "weight_decay": 0.0,
+  "l1_lambda": 0.0,
+  "adam_beta1": 0.9,
+  "adam_beta2": 0.999,
+  "adam_eps": 1e-08,
+  "input_noise_std": 0.0,
+  "augmentation_enabled": false,
+  "augmentation_description": "rotation_degrees=0.0, translate=(0.0, 0.0), scale=(1.0, 1.0)",
+  "augmentation_config": {
+    "enabled": false,
+    "rotation_degrees": 0.0,
+    "translate": [
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0
+    ]
+  },
+  "device": "cuda:0",
+  "output_dir": "C:\\Users\\emil_\\vscode\\Assignment1\\part_2\\outputs\\cnn_comparison_2026-05-02_131009\\cnn_medium",
+  "git_commit": "31cc8433263ee46cd95793866bb2a6d98c8a0fbf",
+  "git_is_dirty": true,
+  "model_name": "cnn_medium",
+  "conv_channels": [
+    32,
+    64
+  ],
+  "kernel_size": 3,
+  "pool_kernel_size": 2,
+  "classifier_hidden_size": 128,
+  "activation": "LeakyReLU",
+  "dropout": 0.0,
+  "batch_norm": false,
+  "trainable_parameters": 421642,
+  "num_conv_layers": 2
+}

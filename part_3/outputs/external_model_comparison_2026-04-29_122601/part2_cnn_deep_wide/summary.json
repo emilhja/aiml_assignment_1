@@ -1,0 +1,41 @@
+{
+  "best_epoch": 10,
+  "best_stage": "part2_cnn_deep_wide",
+  "selection_metric": "validation_accuracy",
+  "best_validation_accuracy": 0.8152173913043478,
+  "best_validation_loss_at_best_epoch": 0.427754080813864,
+  "best_epoch_by_loss": 10,
+  "best_validation_loss": 0.427754080813864,
+  "time_to_best_model_seconds": 242.02306199999293,
+  "total_training_time_seconds": 242.02325250000285,
+  "average_epoch_time_seconds": 24.182231760000285,
+  "final_test_loss": 0.4462200247299444,
+  "final_test_accuracy": 0.771117166212534,
+  "final_test_macro_f1": 0.7182290143316759,
+  "test_evaluation_time_seconds": 1.3195457000110764,
+  "test_evaluation_images_per_second": 278.1260247348155,
+  "test_evaluation_time_per_image_seconds": 0.0035954923706023882,
+  "test_evaluation_time_per_image_ms": 3.595492370602388,
+  "test_prediction_collection_time_seconds": 1.3816884999978356,
+  "final_test_total_time_seconds": 2.701234200008912,
+  "stopped_early": false,
+  "epochs_completed": 10,
+  "best_model_path": "C:\\Users\\emil_\\vscode\\Assignment1\\part_3\\outputs\\external_model_comparison_2026-04-29_122601\\part2_cnn_deep_wide\\best_model.pt",
+  "trainable_parameters": 388930,
+  "total_parameters": 388930,
+  "dataset_sizes": {
+    "train": 3312,
+    "validation": 368,
+    "test": 367
+  },
+  "confusion_matrix_counts": [
+    [
+      62,
+      62
+    ],
+    [
+      22,
+      221
+    ]
+  ]
+}

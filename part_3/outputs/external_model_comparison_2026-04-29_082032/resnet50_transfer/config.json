@@ -1,0 +1,80 @@
+{
+  "task_name": "oxford_pet_cat_vs_dog",
+  "label_mode": "species",
+  "class_names": [
+    "cat",
+    "dog"
+  ],
+  "breed_count": 37,
+  "breed_names_preview": [
+    "abyssinian",
+    "american bulldog",
+    "american pit bull terrier",
+    "basset hound",
+    "beagle",
+    "bengal",
+    "birman",
+    "bombay",
+    "boxer",
+    "british shorthair"
+  ],
+  "model_name": "resnet50_transfer",
+  "batch_size": 32,
+  "epochs_head": 3,
+  "epochs_finetune": 22,
+  "learning_rate_head": 0.001,
+  "learning_rate_finetune": 0.0001,
+  "validation_ratio": 0.1,
+  "test_ratio": 1.0,
+  "seed": 42,
+  "checkpoint_interval": 1,
+  "num_workers": 0,
+  "dataset_root": "C:\\Users\\emil_\\vscode\\Assignment1\\data",
+  "output_dir": "C:\\Users\\emil_\\vscode\\Assignment1\\Part3\\outputs\\external_model_comparison_2026-04-29_082032\\resnet50_transfer",
+  "device": "cuda:0",
+  "image_size": [
+    224,
+    224
+  ],
+  "normalization_mean": [
+    0.485,
+    0.456,
+    0.406
+  ],
+  "normalization_std": [
+    0.229,
+    0.224,
+    0.225
+  ],
+  "train_transform": "Resize(224x224) -> RandomHorizontalFlip -> RandomAffine -> ColorJitter -> ToTensor -> Normalize(ImageNet)",
+  "eval_transform": "Resize(224x224) -> ToTensor -> Normalize(ImageNet)",
+  "train_size": 3312,
+  "validation_size": 368,
+  "test_size": 3669,
+  "total_parameters": 23512130,
+  "initial_trainable_parameters": 23512130,
+  "stage_plan": [
+    {
+      "name": "head",
+      "epochs": 3,
+      "learning_rate": 0.001
+    },
+    {
+      "name": "finetune",
+      "epochs": 22,
+      "learning_rate": 0.0001
+    }
+  ],
+  "run_started_at": "2026-04-29T09:35:57",
+  "optimizer_name": "Adam",
+  "scheduler_name": "none",
+  "weight_decay": 0.0,
+  "label_smoothing": 0.0,
+  "use_class_weights": false,
+  "class_weights": null,
+  "weights_name": "ResNet50_Weights.IMAGENET1K_V2",
+  "transfer_learning": true,
+  "backbone_name": "resnet50",
+  "git_commit": "628553f943c9ea725c236fb9c8c21a825aea8d6e",
+  "git_is_dirty": false
+}

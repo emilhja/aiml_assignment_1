@@ -106,6 +106,7 @@ def get_mnist_loaders(
         [train_size, validation_size],
         generator=generator,
     )
+    # Use the same index subset as train_set so augmented and plain views stay in sync.
     augmented_train_set = torch.utils.data.Subset(
         augmented_train_set,
         train_set.indices,

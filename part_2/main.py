@@ -57,6 +57,7 @@ def count_trainable_parameters(model):
 
 def compute_l1_penalty(model):
     """Return the sum of absolute trainable parameter values for L1 regularization."""
+    # Start from None so the first term lands on the correct device automatically.
     penalty = None
     for parameter in model.parameters():
         if not parameter.requires_grad:
@@ -255,7 +256,7 @@ class ConfigurableMNISTCNN(nn.Module):
                 nn.MaxPool2d(kernel_size=pool_kernel_size, stride=pool_kernel_size)
             )
             in_channels = out_channels
-            spatial_size //= pool_kernel_size
+            spatial_size //= pool_kernel_size  # track feature-map size after each pool
 
         classifier_layers = [
             nn.Flatten(),
@@ -283,6 +284,7 @@ def build_model(model_name, model_overrides=None):
             hidden_size_1=config["hidden_size_1"],
             hidden_size_2=config["hidden_size_2"],
         )
+    # cnn_medium without overrides uses the fixed MNISTCNN for reproducibility with saved checkpoints.
     if model_name == "cnn_medium" and not model_overrides:
         return MNISTCNN()
     return ConfigurableMNISTCNN(

@@ -1,0 +1,13 @@
+{
+  "best_epoch": 4,
+  "best_validation_loss": 0.028835717453931767,
+  "best_validation_accuracy": 0.9908333333333333,
+  "time_to_best_model_seconds": 40.40781249999782,
+  "total_training_time_seconds": 51.49381709999943,
+  "average_epoch_time_seconds": 10.039363219999359,
+  "final_test_loss": 0.023584913424064873,
+  "final_test_accuracy": 0.9923,
+  "stopped_early": false,
+  "epochs_completed": 5,
+  "best_model_path": "C:\\Users\\emil_\\vscode\\Assignment1\\part_2\\outputs\\augmentation_comparison_2026-04-28_154632\\with_augmentation\\best_model.pt"
+}

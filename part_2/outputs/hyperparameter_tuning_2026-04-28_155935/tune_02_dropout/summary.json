@@ -1,0 +1,13 @@
+{
+  "best_epoch": 4,
+  "best_validation_loss": 0.037360488827029865,
+  "best_validation_accuracy": 0.9903333333333333,
+  "time_to_best_model_seconds": 30.072536499999842,
+  "total_training_time_seconds": 53.87362750000102,
+  "average_epoch_time_seconds": 7.486398914285279,
+  "final_test_loss": 0.026282281504268756,
+  "final_test_accuracy": 0.9908,
+  "stopped_early": false,
+  "epochs_completed": 7,
+  "best_model_path": "C:\\Users\\emil_\\vscode\\Assignment1\\part_2\\outputs\\hyperparameter_tuning_2026-04-28_155935\\tune_02_dropout\\best_model.pt"
+}

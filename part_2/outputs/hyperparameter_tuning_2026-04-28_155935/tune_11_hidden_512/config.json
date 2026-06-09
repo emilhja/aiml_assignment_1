@@ -1,0 +1,47 @@
+{
+  "batch_size": 64,
+  "epochs": 7,
+  "learning_rate": 0.001,
+  "checkpoint_interval": 5,
+  "validation_ratio": 0.1,
+  "seed": 42,
+  "early_stopping_patience": 5,
+  "optimizer_name": "Adam",
+  "weight_decay": 0.0001,
+  "l1_lambda": 0.0,
+  "adam_beta1": 0.9,
+  "adam_beta2": 0.999,
+  "adam_eps": 1e-08,
+  "input_noise_std": 0.0,
+  "augmentation_enabled": false,
+  "augmentation_description": "rotation_degrees=0.0, translate=(0.0, 0.0), scale=(1.0, 1.0)",
+  "augmentation_config": {
+    "enabled": false,
+    "rotation_degrees": 0.0,
+    "translate": [
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0
+    ]
+  },
+  "device": "cuda:0",
+  "output_dir": "C:\\Users\\emil_\\vscode\\Assignment1\\part_2\\outputs\\hyperparameter_tuning_2026-04-28_155935\\tune_11_hidden_512",
+  "git_commit": "2d0d359a3a26e3347c5c54a75b9cabcd48c9e841",
+  "git_is_dirty": true,
+  "model_name": "cnn_medium_hidden_512",
+  "conv_channels": [
+    32,
+    64
+  ],
+  "kernel_size": 3,
+  "pool_kernel_size": 2,
+  "classifier_hidden_size": 512,
+  "activation": "LeakyReLU",
+  "dropout": 0.0,
+  "batch_norm": false,
+  "trainable_parameters": 1630090,
+  "num_conv_layers": 2
+}

@@ -1,0 +1,41 @@
+{
+  "best_epoch": 18,
+  "best_stage": "scratch_improved",
+  "selection_metric": "validation_accuracy",
+  "best_validation_accuracy": 0.7038043478260869,
+  "best_validation_loss_at_best_epoch": 0.6464397337125696,
+  "best_epoch_by_loss": 24,
+  "best_validation_loss": 0.6230145433674688,
+  "time_to_best_model_seconds": 729.7798416000005,
+  "total_training_time_seconds": 1014.6976167999965,
+  "average_epoch_time_seconds": 40.51417931200122,
+  "final_test_loss": 0.5701655385425352,
+  "final_test_accuracy": 0.6991005723630417,
+  "final_test_macro_f1": 0.6672583423311408,
+  "test_evaluation_time_seconds": 17.527135299998918,
+  "test_evaluation_images_per_second": 209.33255419099928,
+  "test_evaluation_time_per_image_seconds": 0.004777087844098914,
+  "test_evaluation_time_per_image_ms": 4.777087844098914,
+  "test_prediction_collection_time_seconds": 18.034877899990533,
+  "final_test_total_time_seconds": 35.56201319998945,
+  "stopped_early": false,
+  "epochs_completed": 25,
+  "best_model_path": "C:\\Users\\emil_\\vscode\\Assignment1\\Part3\\outputs\\scratch_improvement_2026-04-29_073549\\residual_cnn\\best_model.pt",
+  "trainable_parameters": 2809634,
+  "total_parameters": 2809634,
+  "dataset_sizes": {
+    "train": 3312,
+    "validation": 368,
+    "test": 3669
+  },
+  "confusion_matrix_counts": [
+    [
+      715,
+      468
+    ],
+    [
+      636,
+      1850
+    ]
+  ]
+}

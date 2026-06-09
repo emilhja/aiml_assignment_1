@@ -3,7 +3,4 @@ __pycache__/
 .pytest_cache/
 .venv/
 venv/
-outputs/
-data/
-dev_docs/
 .claude/

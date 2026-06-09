@@ -1,0 +1,41 @@
+{
+  "best_epoch": 23,
+  "best_stage": "scratch_improved",
+  "selection_metric": "validation_accuracy",
+  "best_validation_accuracy": 0.8804347826086957,
+  "best_validation_loss_at_best_epoch": 0.3809060078600179,
+  "best_epoch_by_loss": 23,
+  "best_validation_loss": 0.3809060078600179,
+  "time_to_best_model_seconds": 705.1387877000088,
+  "total_training_time_seconds": 768.4029565000092,
+  "average_epoch_time_seconds": 30.655738964000484,
+  "final_test_loss": 0.278006191408319,
+  "final_test_accuracy": 0.8969746524938675,
+  "final_test_macro_f1": 0.8846107381880265,
+  "test_evaluation_time_seconds": 15.764752600007341,
+  "test_evaluation_images_per_second": 232.73438493403896,
+  "test_evaluation_time_per_image_seconds": 0.004296743690380851,
+  "test_evaluation_time_per_image_ms": 4.296743690380851,
+  "test_prediction_collection_time_seconds": 16.94930920000479,
+  "final_test_total_time_seconds": 32.71406180001213,
+  "stopped_early": false,
+  "epochs_completed": 25,
+  "best_model_path": "C:\\Users\\emil_\\vscode\\Assignment1\\Part3\\outputs\\scratch_improvement_2026-04-29_073549\\deeper_cnn\\best_model.pt",
+  "trainable_parameters": 3485666,
+  "total_parameters": 3485666,
+  "dataset_sizes": {
+    "train": 3312,
+    "validation": 368,
+    "test": 3669
+  },
+  "confusion_matrix_counts": [
+    [
+      1045,
+      138
+    ],
+    [
+      240,
+      2246
+    ]
+  ]
+}

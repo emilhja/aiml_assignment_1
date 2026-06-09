@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-from pathlib import Path
 import sys
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import torch
@@ -20,12 +20,16 @@ from part_2.torch_gpu import describe_device, get_device
 
 
 class MNISTPerceptron(nn.Module):
+    """Two-hidden-layer MLP"""
+
     def __init__(self, hidden_size_1=128, hidden_size_2=64):
         super().__init__()
         self.network = nn.Sequential(
             nn.Flatten(),
+            # Hidden layer 1:
             nn.Linear(28 * 28, hidden_size_1),
             nn.LeakyReLU(negative_slope=0.01),
+            # Hidden layer 2: 
             nn.Linear(hidden_size_1, hidden_size_2),
             nn.LeakyReLU(negative_slope=0.01),
             nn.Linear(hidden_size_2, 10),
@@ -36,30 +40,44 @@ class MNISTPerceptron(nn.Module):
 
 
 def run_epoch(model, data_loader, loss_fn, device, optimizer=None):
+    """
+    One run
+    Trains if optimizer is provided; otherwise evaluates.
+    Returns (mean_loss, accuracy) for the epoch.
+    """
+    # If optimizer=None => evaluation mode, i.e. no weight updates
     is_training = optimizer is not None
-    model.train(is_training)
+    model.train(is_training)  # enables/disables
     running_loss = 0.0
     correct = 0
     total = 0
 
+    # Disable gradient computation during evaluation to save memory and time
     with torch.set_grad_enabled(is_training):
         for images, labels in data_loader:
+            # Move data to the same device as the model (CPU or GPU). Important!
             images = images.to(device, non_blocking=True)
             labels = labels.to(device, non_blocking=True)
 
             if is_training:
+                # Clear gradients from the previous batch before computing new ones
                 optimizer.zero_grad(set_to_none=True)
-            logits = model(images)
-            loss = loss_fn(logits, labels)
+
+            logits = model(images)           # forward pass → raw class scores
+            loss = loss_fn(logits, labels)   # scalar loss for this batch
+
             if is_training:
-                loss.backward()
-                optimizer.step()
+                loss.backward()   # compute gradients via backprop
+                optimizer.step()  # update weights using those gradients
 
             batch_size = labels.size(0)
+            #  Weighted loss so we can compute the true mean at the end
             running_loss += loss.item() * batch_size
+            # Count how many predictions matched with correct labels
             correct += (logits.argmax(dim=1) == labels).sum().item()
             total += batch_size
 
+    # Return per-sample averages across the entire epoch
     return running_loss / total, correct / total
 
 

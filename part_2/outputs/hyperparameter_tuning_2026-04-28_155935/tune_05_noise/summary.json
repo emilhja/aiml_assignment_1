@@ -1,0 +1,13 @@
+{
+  "best_epoch": 3,
+  "best_validation_loss": 0.0324363756539921,
+  "best_validation_accuracy": 0.9896666666666667,
+  "time_to_best_model_seconds": 26.35781770000176,
+  "total_training_time_seconds": 62.53978199999983,
+  "average_epoch_time_seconds": 8.684358671427617,
+  "final_test_loss": 0.02640022765722242,
+  "final_test_accuracy": 0.9912,
+  "stopped_early": false,
+  "epochs_completed": 7,
+  "best_model_path": "C:\\Users\\emil_\\vscode\\Assignment1\\part_2\\outputs\\hyperparameter_tuning_2026-04-28_155935\\tune_05_noise\\best_model.pt"
+}

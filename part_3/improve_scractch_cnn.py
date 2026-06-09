@@ -94,6 +94,7 @@ class ResidualBlock(nn.Module):
         )
         self.bn2 = nn.BatchNorm2d(out_channels)
         self.dropout = nn.Dropout2d(dropout) if dropout > 0.0 else nn.Identity()
+        # Identity shortcut is replaced only when dimensions change so the residual add works.
         self.shortcut = nn.Identity()
         if stride != 1 or in_channels != out_channels:
             self.shortcut = nn.Sequential(
@@ -230,6 +231,7 @@ def compute_class_weights(train_loader):
         bincount = torch.bincount(labels, minlength=2).to(torch.float32)
         counts += bincount
     weights = counts.sum() / torch.clamp(counts, min=1.0)
+    # Normalize so the average weight equals 1, keeping loss magnitude stable.
     return weights / weights.sum() * len(weights)
 
 
@@ -385,6 +387,7 @@ def train_variant(
         is_better_accuracy = val_accuracy > best_validation_accuracy
         is_tied_accuracy = math.isclose(val_accuracy, best_validation_accuracy, rel_tol=0.0, abs_tol=1e-12)
         is_better_loss_tiebreak = val_loss < best_validation_loss
+        # Break accuracy ties with validation loss so training is deterministic.
         if is_better_accuracy or (is_tied_accuracy and is_better_loss_tiebreak):
             best_validation_accuracy = val_accuracy
             best_validation_loss = val_loss

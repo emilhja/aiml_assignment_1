@@ -1,0 +1,13 @@
+{
+  "best_epoch": 4,
+  "best_validation_loss": 0.03697043529773752,
+  "best_validation_accuracy": 0.9886666666666667,
+  "time_to_best_model_seconds": 30.491171500001656,
+  "total_training_time_seconds": 54.93716830000267,
+  "average_epoch_time_seconds": 7.645507314285559,
+  "final_test_loss": 0.033272097695153206,
+  "final_test_accuracy": 0.9899,
+  "stopped_early": false,
+  "epochs_completed": 7,
+  "best_model_path": "C:\\Users\\emil_\\vscode\\Assignment1\\part_2\\outputs\\regularization_comparison_2026-04-28_155225\\weight_decay_only\\best_model.pt"
+}

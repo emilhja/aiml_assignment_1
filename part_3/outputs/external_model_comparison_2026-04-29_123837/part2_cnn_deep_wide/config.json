@@ -1,0 +1,77 @@
+{
+  "task_name": "oxford_pet_cat_vs_dog",
+  "label_mode": "species",
+  "class_names": [
+    "cat",
+    "dog"
+  ],
+  "breed_count": 37,
+  "breed_names_preview": [
+    "abyssinian",
+    "american bulldog",
+    "american pit bull terrier",
+    "basset hound",
+    "beagle",
+    "bengal",
+    "birman",
+    "bombay",
+    "boxer",
+    "british shorthair"
+  ],
+  "model_name": "part2_cnn_deep_wide",
+  "batch_size": 32,
+  "epochs_head": 40,
+  "epochs_finetune": 0,
+  "learning_rate_head": 0.001,
+  "learning_rate_finetune": 0.0001,
+  "validation_ratio": 0.1,
+  "test_ratio": 0.1,
+  "seed": 42,
+  "checkpoint_interval": 1,
+  "num_workers": 0,
+  "dataset_root": "C:\\Users\\emil_\\vscode\\Assignment1\\data",
+  "output_dir": "C:\\Users\\emil_\\vscode\\Assignment1\\part_3\\outputs\\external_model_comparison_2026-04-29_123837\\part2_cnn_deep_wide",
+  "device": "cuda:0",
+  "image_size": [
+    224,
+    224
+  ],
+  "normalization_mean": [
+    0.485,
+    0.456,
+    0.406
+  ],
+  "normalization_std": [
+    0.229,
+    0.224,
+    0.225
+  ],
+  "train_transform": "Resize(224x224) -> RandomHorizontalFlip -> RandomAffine -> ColorJitter -> ToTensor -> Normalize(ImageNet)",
+  "eval_transform": "Resize(224x224) -> ToTensor -> Normalize(ImageNet)",
+  "train_size": 3312,
+  "validation_size": 368,
+  "test_size": 367,
+  "total_parameters": 388930,
+  "initial_trainable_parameters": 388930,
+  "stage_plan": [
+    {
+      "name": "part2_cnn_deep_wide",
+      "epochs": 40,
+      "learning_rate": 0.001
+    }
+  ],
+  "run_started_at": "2026-04-29T12:38:37",
+  "optimizer_name": "Adam",
+  "scheduler_name": "none",
+  "weight_decay": 0.0,
+  "label_smoothing": 0.0,
+  "use_class_weights": false,
+  "class_weights": null,
+  "weights_name": null,
+  "transfer_learning": false,
+  "backbone_name": "part2_cnn_deep_wide",
+  "part2_source_model": "cnn_deep_wide",
+  "variant_notes": "Part 2 best CNN architecture adapted from MNIST to RGB Oxford Pet images with 3 output-pool spatial size and 2 output classes.",
+  "git_commit": "1d7b1de66eb0b524310f713d39611da232143516",
+  "git_is_dirty": true
+}

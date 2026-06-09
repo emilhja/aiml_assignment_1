@@ -1,0 +1,13 @@
+{
+  "best_epoch": 4,
+  "best_validation_loss": 0.03634824275442709,
+  "best_validation_accuracy": 0.9901666666666666,
+  "time_to_best_model_seconds": 32.1164303000005,
+  "total_training_time_seconds": 58.019742500000575,
+  "average_epoch_time_seconds": 8.082089300000266,
+  "final_test_loss": 0.023556575211253948,
+  "final_test_accuracy": 0.9921,
+  "stopped_early": false,
+  "epochs_completed": 7,
+  "best_model_path": "C:\\Users\\emil_\\vscode\\Assignment1\\part_2\\outputs\\regularization_comparison_2026-04-28_155225\\dropout_only\\best_model.pt"
+}

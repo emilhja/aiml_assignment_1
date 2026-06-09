@@ -1,0 +1,41 @@
+{
+  "best_epoch": 25,
+  "best_stage": "finetune",
+  "selection_metric": "validation_accuracy",
+  "best_validation_accuracy": 0.9945652173913043,
+  "best_validation_loss_at_best_epoch": 0.009446941821015966,
+  "best_epoch_by_loss": 25,
+  "best_validation_loss": 0.009446941821015966,
+  "time_to_best_model_seconds": 640.0335863000073,
+  "total_training_time_seconds": 640.033725900008,
+  "average_epoch_time_seconds": 25.41776842000021,
+  "final_test_loss": 0.03627779525982034,
+  "final_test_accuracy": 0.9899155083128918,
+  "final_test_macro_f1": 0.9884213630044667,
+  "test_evaluation_time_seconds": 12.988045100006275,
+  "test_evaluation_images_per_second": 282.4905497131533,
+  "test_evaluation_time_per_image_seconds": 0.003539941428183776,
+  "test_evaluation_time_per_image_ms": 3.539941428183776,
+  "test_prediction_collection_time_seconds": 13.413768700003857,
+  "final_test_total_time_seconds": 26.40181380001013,
+  "stopped_early": false,
+  "epochs_completed": 25,
+  "best_model_path": "C:\\Users\\emil_\\vscode\\Assignment1\\Part3\\outputs\\external_model_comparison_2026-04-29_082032\\resnet18_transfer\\best_model.pt",
+  "trainable_parameters": 11177538,
+  "total_parameters": 11177538,
+  "dataset_sizes": {
+    "train": 3312,
+    "validation": 368,
+    "test": 3669
+  },
+  "confusion_matrix_counts": [
+    [
+      1157,
+      26
+    ],
+    [
+      11,
+      2475
+    ]
+  ]
+}

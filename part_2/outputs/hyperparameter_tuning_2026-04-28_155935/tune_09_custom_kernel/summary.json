@@ -1,0 +1,13 @@
+{
+  "best_epoch": 7,
+  "best_validation_loss": 0.032994956707271435,
+  "best_validation_accuracy": 0.9908333333333333,
+  "time_to_best_model_seconds": 55.7635775000017,
+  "total_training_time_seconds": 57.11742950000189,
+  "average_epoch_time_seconds": 7.954617971428628,
+  "final_test_loss": 0.025941139761632804,
+  "final_test_accuracy": 0.9921,
+  "stopped_early": false,
+  "epochs_completed": 7,
+  "best_model_path": "C:\\Users\\emil_\\vscode\\Assignment1\\part_2\\outputs\\hyperparameter_tuning_2026-04-28_155935\\tune_09_custom_kernel\\best_model.pt"
+}

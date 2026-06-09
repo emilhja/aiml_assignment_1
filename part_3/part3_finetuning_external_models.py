@@ -27,6 +27,7 @@ from torchvision.models import (
     resnet50,
 )
 
+# Two levels up: part_3/ -> Assignment1/ (repo root), so part_2 imports resolve correctly.
 CURRENT_DIR = Path(__file__).resolve().parent.parent
 if str(CURRENT_DIR) not in sys.path:
     sys.path.insert(0, str(CURRENT_DIR))
@@ -165,6 +166,7 @@ class OxfordPetLabelAdapter:
 
     def encode(self, target):
         """Return the encoded class index plus metadata."""
+        # OxfordIIITPet returns (category, binary-category) when both target_types are requested.
         breed_index, binary_index = target
         label = int(binary_index)
         if label not in (0, 1):
@@ -379,6 +381,8 @@ def build_data_loaders(dataset_root, batch_size, validation_ratio, test_ratio, s
     """Build train, validation, and test loaders plus dataset metadata."""
     train_transform, evaluation_transform = build_transforms()
 
+    # A throwaway dataset load is needed to read .classes before applying transforms,
+    # since OxfordPetClassificationDataset wraps the base dataset and hides .classes.
     reference_dataset = OxfordIIITPet(
         root=dataset_root,
         split="trainval",
@@ -423,6 +427,7 @@ def build_data_loaders(dataset_root, batch_size, validation_ratio, test_ratio, s
     val_dataset = Subset(eval_dataset_full, val_indices)
     test_dataset = Subset(test_dataset_full, test_indices)
 
+    # pin_memory speeds up host-to-GPU transfers but is a no-op (and wastes RAM) on CPU-only systems.
     pin_memory = torch.cuda.is_available()
     train_loader = DataLoader(
         train_dataset,
@@ -538,6 +543,7 @@ def build_model(model_name):
 
 def get_head_parameters(model, model_name):
     """Return the classifier parameters for head-only optimization."""
+    # Scratch models have no frozen backbone, so all parameters are "head" parameters.
     if model_name == "part2_cnn_deep_wide":
         return list(model.parameters())
     if model_name == "scratch_cnn":
@@ -586,6 +592,7 @@ def compute_class_weights(data_loader, num_classes):
     for _images, labels in data_loader:
         counts += torch.bincount(labels, minlength=num_classes).to(torch.float32)
     weights = counts.sum() / torch.clamp(counts, min=1.0)
+    # Normalize so weights average to 1.0, keeping the loss on the same scale as unweighted CE.
     return weights / weights.sum() * len(weights)
 
 
@@ -831,6 +838,7 @@ def plot_confusion_matrix(labels, predictions, class_names, output_path):
 
 def compute_macro_f1(labels, predictions, num_classes):
     """Compute macro F1 without external dependencies."""
+    # Avoids a scikit-learn import while keeping the metric consistent with standard definitions.
     scores = []
     for class_index in range(num_classes):
         true_positive = (
@@ -1026,6 +1034,7 @@ def train_model(
             )
         scheduler = None
         if config.get("scheduler_name") == "cosine":
+            # T_max spans the full run (both stages) so the LR reaches its minimum at the last epoch.
             scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
                 optimizer,
                 T_max=max(1, total_planned_epochs),
@@ -1073,9 +1082,13 @@ def train_model(
             is_better_accuracy = val_accuracy > best_validation_accuracy
             is_tied_accuracy = abs(val_accuracy - best_validation_accuracy) < 1e-12
             is_better_loss_tiebreak = val_loss < best_validation_loss
+            # Ties in accuracy (common with small datasets) are broken by lower val_loss
+            # so the best-model checkpoint is always deterministic across runs.
             if is_better_accuracy or (is_tied_accuracy and is_better_loss_tiebreak):
                 best_validation_accuracy = val_accuracy
                 best_validation_loss = val_loss
+                # Private helpers used directly to save the best-model checkpoint without
+                # incrementing the periodic checkpoint counter tracked by the public API.
                 payload = checkpoint_manager._build_payload(
                     global_epoch,
                     model,
@@ -1251,6 +1264,8 @@ def run_experiment(args):
     plot_accuracy_curves(history, output_path / "accuracy_curve.png")
     history_path = save_history_json(history, output_path / "training_history.json")
 
+    # weights_only=False is required because the checkpoint also stores the optimizer state dict
+    # and config dict, which contain non-tensor Python objects.
     best_checkpoint = torch.load(
         checkpoint_manager.best_path,
         map_location=device,

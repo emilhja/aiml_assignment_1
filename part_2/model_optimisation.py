@@ -28,7 +28,7 @@ class CheckpointManager:
         tmp_path = dest_path.with_suffix(".tmp")
         try:
             torch.save(payload, tmp_path)
-            os.replace(tmp_path, dest_path)
+            os.replace(tmp_path, dest_path)  # atomic on POSIX; best-effort on Windows
         except Exception as exc:
             tmp_path.unlink(missing_ok=True)
             raise exc

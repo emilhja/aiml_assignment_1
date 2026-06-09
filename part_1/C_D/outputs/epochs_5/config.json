@@ -1,0 +1,9 @@
+{
+  "batch_size": 64,
+  "epochs": 5,
+  "learning_rate": 0.001,
+  "checkpoint_interval": 5,
+  "model_name": "MNISTPerceptron",
+  "validation_set": "10% split from MNIST train split",
+  "test_set": "MNIST test split"
+}

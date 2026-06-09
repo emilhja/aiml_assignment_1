@@ -1,0 +1,41 @@
+{
+  "best_epoch": 24,
+  "best_stage": "scratch_improved",
+  "selection_metric": "validation_accuracy",
+  "best_validation_accuracy": 0.8722826086956522,
+  "best_validation_loss_at_best_epoch": 0.3896358829477559,
+  "best_epoch_by_loss": 24,
+  "best_validation_loss": 0.3896358829477559,
+  "time_to_best_model_seconds": 691.4387606000091,
+  "total_training_time_seconds": 720.5301024000073,
+  "average_epoch_time_seconds": 28.780060728001992,
+  "final_test_loss": 0.29334729617884453,
+  "final_test_accuracy": 0.880348868901608,
+  "final_test_macro_f1": 0.859684868940475,
+  "test_evaluation_time_seconds": 16.084317799992277,
+  "test_evaluation_images_per_second": 228.11038961203326,
+  "test_evaluation_time_per_image_seconds": 0.0043838424093737465,
+  "test_evaluation_time_per_image_ms": 4.383842409373747,
+  "test_prediction_collection_time_seconds": 15.424868600006448,
+  "final_test_total_time_seconds": 31.509186399998725,
+  "stopped_early": false,
+  "epochs_completed": 25,
+  "best_model_path": "C:\\Users\\emil_\\vscode\\Assignment1\\Part3\\outputs\\scratch_improvement_2026-04-29_073549\\baseline_v2\\best_model.pt",
+  "trainable_parameters": 1206370,
+  "total_parameters": 1206370,
+  "dataset_sizes": {
+    "train": 3312,
+    "validation": 368,
+    "test": 3669
+  },
+  "confusion_matrix_counts": [
+    [
+      911,
+      272
+    ],
+    [
+      167,
+      2319
+    ]
+  ]
+}
